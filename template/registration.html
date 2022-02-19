@@ -28,30 +28,46 @@
                     management system, login now to begin</p>
                 <img src="../static/illustration.svg" alt="" width="auto" height="auto">
             </div>
-            <div <div class="column">
+            <div class="column register">
                 <form>
                     <div class="container">
-                        <h3 class="logintext">Login to your Account</h3>
-
+                        <h3 class="signuptext">Sign up your Account</h3>
+                        <input type="text" placeholder="Enter First Name" name="fname" required>
+                        <input type="text" placeholder="Enter Last Name" name="lname" required>
                         <input type="email" placeholder="Enter Email Address" name="email" required>
-
-                        <input type="password" placeholder="Enter Password" name="password" required>
-                        <button type="submit">Login now</button>
+                        <input type="password" placeholder="Enter Password" id="password" required>
+                        <input type="password" placeholder="Confirm Password" id="confirm_password" required>
+                        <input type="tel" placeholder="Enter Phone Number" name="phone"
+                            pattern="^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$" required>
+                        <button type="submit">Register now</button>
                         <div class="extra">
-                            Not a member? <a href="/register">  Sign Up now </a>
-                            <!-- urls.py and views.py config and routing remain  -->
+                            Already a member? <a href="/home">Sign in now </a>
+                            <!-- urls.py and views.py config and routing remain -->
                         </div>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-
     </div>
     </div>
     <footer>
         Copyright 2022 Cuvette Tech - All rights reserved
     </footer>
 </body>
+<script>
+    var password = document.getElementById("password")
+        , confirm_password = document.getElementById("confirm_password");
+
+    function validatePassword() {
+        if (password.value != confirm_password.value) {
+            confirm_password.setCustomValidity("Passwords Don't Match");
+        } else {
+            confirm_password.setCustomValidity('');
+        }
+    }
+    password.onchange = validatePassword;
+    confirm_password.onkeyup = validatePassword;
+</script>
 
 </html>
