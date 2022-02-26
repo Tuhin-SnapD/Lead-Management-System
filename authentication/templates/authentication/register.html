@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-
+    {% load crispy_forms_tags %}
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -28,30 +28,40 @@
                     management system, login now to begin</p>
                 <img src="../static/illustration.svg" alt="" width="auto" height="auto">
             </div>
-            <div <div class="column">
-                <form>
-                    <div class="container">
-                        <h3 class="logintext">Login to your Account</h3>
-
-                        <input type="email" placeholder="Enter Email Address" name="email" required>
-
-                        <input type="password" placeholder="Enter Password" name="password" required>
-                        <button type="submit">Login now</button>
-                        <div class="extra">
-                            Not a member? <a href="/register">  Sign Up now </a>
-                            <!-- urls.py and views.py config and routing remain  -->
-                        </div>
-                    </div>
-                </form>
+            <div class="column register">
+                <form method="POST" style="border: 4px solid border-left; margin: 5%; padding: 4px; border-radius:1%;">
+                    {% csrf_token %}
+                    <fieldset class="form-group">
+                      {{ form|crispy}}
+                    </fieldset>
+                   <center>
+                    <button style="background: rgb(3, 4, 6); font-size: 3rem; padding:1%;" class="btn btn-outline-info" type="submit"><span class="glyphicon glyphicon-log-in"></span> &nbsp; submit</button>
+                  </center>
+                  <br/>
+                  <sub style="text-align: left;"><a href="{% url 'register' %}" style="text-decoration: none; color: yellowgreen; padding:2%; cursor:pointer; margin-right:2%;">You are ready to login now</a></sub>
+                  </form>
             </div>
         </div>
     </div>
-
     </div>
     </div>
     <footer>
         Copyright 2022 Cuvette Tech - All rights reserved
     </footer>
 </body>
+<script>
+    var password = document.getElementById("password")
+        , confirm_password = document.getElementById("confirm_password");
+
+    function validatePassword() {
+        if (password.value != confirm_password.value) {
+            confirm_password.setCustomValidity("Passwords Don't Match");
+        } else {
+            confirm_password.setCustomValidity('');
+        }
+    }
+    password.onchange = validatePassword;
+    confirm_password.onkeyup = validatePassword;
+</script>
 
 </html>

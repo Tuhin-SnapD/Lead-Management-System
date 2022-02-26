@@ -15,11 +15,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-
-admin.site.site_header= "Leads Management Platform"
-admin.site.site_title="leads management"
+from . import views
+from .views import index, login, register
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('authentication/',include('authentication.urls'))
+    path('',views.index, name='index'),
+    path("login",views.login, name="login"),
+    path("register",views.register, name="register"),
 ]
+

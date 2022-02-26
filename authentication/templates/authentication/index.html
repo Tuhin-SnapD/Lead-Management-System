@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-
+    {% load crispy_forms_tags %}
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -28,46 +28,40 @@
                     management system, login now to begin</p>
                 <img src="../static/illustration.svg" alt="" width="auto" height="auto">
             </div>
-            <div class="column register">
+            <div <div class="column">
                 <form>
                     <div class="container">
-                        <h3 class="signuptext">Sign up your Account</h3>
-                        <input type="text" placeholder="Enter First Name" name="fname" required>
-                        <input type="text" placeholder="Enter Last Name" name="lname" required>
+                        <h3 class="logintext">Login to your Account</h3>
+
                         <input type="email" placeholder="Enter Email Address" name="email" required>
-                        <input type="password" placeholder="Enter Password" id="password" required>
-                        <input type="password" placeholder="Confirm Password" id="confirm_password" required>
-                        <input type="tel" placeholder="Enter Phone Number" name="phone"
-                            pattern="^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$" required>
-                        <button type="submit">Register now</button>
+
+                        <input type="password" placeholder="Enter Password" name="password" required>
+                        <button type="submit">Login now</button>
                         <div class="extra">
-                            Already a member? <a href="/home">Sign in now </a>
-                            <!-- urls.py and views.py config and routing remain -->
+
+                            Not a member? <a href="/register">  Sign Up now </a>
+                            <!-- urls.py and views.py config and routing remain  -->
                         </div>
                     </div>
                 </form>
+                {% csrf_token %}
+    <fieldset class="form-group">
+      {{ form|crispy}}
+    </fieldset>
+    <center>
+    </center>
+  <br/>
+            <button type="submit"><b>log in</b></button>
+    </form>
             </div>
         </div>
     </div>
+
     </div>
     </div>
     <footer>
         Copyright 2022 Cuvette Tech - All rights reserved
     </footer>
 </body>
-<script>
-    var password = document.getElementById("password")
-        , confirm_password = document.getElementById("confirm_password");
-
-    function validatePassword() {
-        if (password.value != confirm_password.value) {
-            confirm_password.setCustomValidity("Passwords Don't Match");
-        } else {
-            confirm_password.setCustomValidity('');
-        }
-    }
-    password.onchange = validatePassword;
-    confirm_password.onkeyup = validatePassword;
-</script>
 
 </html>
