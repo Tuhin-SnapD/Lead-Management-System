@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+    <a href="{% url 'leads:lead-list' %}">Go Back</a>
+    <hr>
+    <h1>This is {{lead.first_name}}</h1>
+    <a href="{% url 'leads:lead-update' lead.pk %}">Update</a>
+    <a href="{% url 'leads:lead-delete' lead.pk %}">Delete</a>
+{% endblock content %}

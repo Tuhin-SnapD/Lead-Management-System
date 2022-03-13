@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <div class="row row-header">
+        <div class="col-12 col-sm-3 mt-4" id="Welcome">
+            <h1>Welcome to your<br> Dashboard</h1>
+            <p>
+                This is the homepage of lead <br>
+                management system, login now to begin</p>
+            <img src="../static/illustration.svg" alt="" width="auto" height="auto">
+        </div>
+        <div class="column">
+            <form>
+                <div class="container">
+                    <h3 class="logintext">Login to your Account</h3>
+                    <input type="email" placeholder="Enter Email Address" name="email" required>
+                    <input type="password" placeholder="Enter Password" name="password" required>
+                    <button type="submit">Login now</button>
+                    <div class="extra">
+
+                        Not a member? <a href="/register"> Sign Up now </a>
+                        <!-- urls.py and views.py config and routing remain  -->
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+</div>
+</div>
+<footer>
+    Copyright 2022 Cuvette Tech - All rights reserved
+</footer>
+{% endblock content %}
