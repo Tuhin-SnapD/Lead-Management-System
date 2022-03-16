@@ -1,7 +1,6 @@
-import email
-from sre_parse import State
 from django import forms
-from .models import Agent, Lead
+from django.contrib.auth.forms import UserCreationForm, UsernameField
+from .models import Lead,User
 
 class LeadModelForm(forms.ModelForm):
     class Meta:
@@ -15,5 +14,8 @@ class LeadModelForm(forms.ModelForm):
             'state',
         )
 
-    
-
+class CustomUserCreationForm(UserCreationForm):
+    class Meta:
+        model = User
+        fields = ("username","email")
+        field_classes = {'username': UsernameField, 'email':forms.EmailField}

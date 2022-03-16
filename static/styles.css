@@ -42,7 +42,8 @@
     margin-top:-100px;
   }
   input[type="email"],
-  input[type="password"],input[type="text"],input[type="tel"] {
+  input[type="password"],
+  input[type="number"],input[type="text"],input[type="tel"] {
     width: 100%;
     margin: 8px 0;
     padding: 12px 20px;
