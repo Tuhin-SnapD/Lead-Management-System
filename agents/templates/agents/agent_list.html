@@ -1,0 +1,13 @@
+{% extends "baseleads.html" %}
+
+{% block content %}
+<a href="{% url 'agents:agent-create' %}">Create a new agent</a>
+{% for agent in object_list %}
+            <h2>
+                {{ agent.user.username }}
+            </h2>
+            <a href="{% url 'agents:agent-detail' agent.pk %}">View agent</a>
+                
+            {% endfor %}
+            
+{% endblock content %}

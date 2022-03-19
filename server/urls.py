@@ -10,6 +10,7 @@ urlpatterns = [
     path('', LoginView.as_view(), name='login'),
     path('admin/', admin.site.urls),
     path('leads/', include('leads.urls', namespace="leads")), 
+    path('agents/', include('agents.urls', namespace="agents")), 
     path('signup/', SignupView.as_view(), name='signup'),
     path('login/', LoginView.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
