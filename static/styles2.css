@@ -78,3 +78,36 @@
       background-color: #000000;
       color: #fff;
   }
+
+  .img404{
+    /* margin-top:5px; */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .maintext{
+    margin-top: -22px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #212529;
+  }
+  .subtext{
+    /* margin-top: -20px; */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #6C757D;
+  }
+  .containerfour{
+    height: 55px;
+    position: relative;
+  }
+
+  .buttonfour { 
+    color: #FFFFFF; 
+    position: absolute;
+    top: 50%; right: 50%;
+    transform: translate(50%,-50%)
+    } 
