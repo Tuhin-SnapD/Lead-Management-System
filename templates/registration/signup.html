@@ -1,18 +1,37 @@
 {% extends 'base.html' %}
 {% load tailwind_filters %}
-
+{% load static %}
 {% block content %}
+<div class="row">
 
-<div class="max-w-lg mx-auto">
-    <form method="post" class="mt-5">
+    <div class="column one">
+        <div class="text-3xl mt-6 font-semibold" id="Welcome">
+            <h1>Welcome to your<br> Dashboard</h1>
+        </div>
+            <p>
+                <div class="text-lg mt-4">
+                This is the homepage of lead <br>
+                management system, login now to begin</p>
+            
+            <div class="mt-6">
+            <img src="{% static 'images/illustration.svg' %}" alt="" width="auto" height="auto">
+        </div>
+        </div>
+    </div>
+
+    <div class="column two">
+        <div class="max-w-lg mx-auto">
+            <div class="box-border rounded-md h-300 w-300 p-8 ml-8 border-2 mt-20">
+                <div class="text-2xl py-2 font-semibold">Register a new Account</div>
+                <form method="post" class="mt-5">
         {% csrf_token %}
         {{ form|crispy }}
         <button type='submit' class="w-full text-white bg-blue-500 hover:bg-blue-600 px-3 py-2 rounded-md">
             Signup
         </button>
     </form>
-    <div class="py-5 border-t border-gray-200 mt-5">
-        <a class="hover:text-blue-500" href="{% url 'login' %}">Already have an account?</a>
+    <div class="pt-5 border-t border-gray-200 mt-5">
+        <p class="text-center"> Already have an account? <a class="text-blue-500 hover:text-black-500 " href="{% url 'login' %}">Login now</a></p>
     </div>
 </div>
 {% endblock content %}

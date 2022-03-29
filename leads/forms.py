@@ -18,6 +18,7 @@ class LeadModelForm(forms.ModelForm):
             'phone_number',
             'email',
         )
+    
 
 
 class LeadForm(forms.Form):
@@ -27,10 +28,18 @@ class LeadForm(forms.Form):
 
 
 class CustomUserCreationForm(UserCreationForm):
+    password1 = forms.CharField(label='Enter password', 
+                                widget=forms.PasswordInput)
+    password2 = forms.CharField(label='Confirm password', 
+                                widget=forms.PasswordInput)
     class Meta:
         model = User
         fields = ("username",)
         field_classes = {'username': UsernameField}
+        help_texts = {
+            "username":None,
+            "password":None,
+        }
 
 
 class AssignAgentForm(forms.Form):

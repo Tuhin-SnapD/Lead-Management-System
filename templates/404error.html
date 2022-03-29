@@ -1,4 +1,28 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block content %}
+
+<div class="img404">
+    <section class="content-center">
+        <img src="{% static 'images/404illustration.svg' %}" alt="" width="auto" height="auto">
+    </section>
+</div>
+<div class="maintext">
+    <div class="pt-2 text-2xl">
+        <p class="text-center">It's not you, Its us</p>
+    </div>
+</div>
+<div class="subtext">
+    <div class="pt-2 text-xl">
+        <p class="text-center">We are working to get your issue solved</p>
+    </div>
+</div>
+<div class="containerfour">
+    <div class="buttonfour">
+        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded content-center mt-2">
+           <a href="/"> Reload </a>
+        </button>
+    </div>
+</div>
 
 {% endblock content %}
