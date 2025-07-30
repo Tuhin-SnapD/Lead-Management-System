@@ -1,11 +1,58 @@
-asgiref==3.5.0
-crispy-tailwind==0.2.0
-Django==3.1.4
-django-crispy-forms==1.10.0
-django-environ==0.4.5
-gunicorn==20.0.4
-Pillow==9.0.1
-psycopg2-binary==2.9.3
-pytz==2021.3
-sqlparse==0.4.2
-whitenoise==5.2.0
+# Core Django
+Django==4.2.7
+asgiref==3.7.2
+
+# Database
+psycopg2-binary==2.9.9
+
+# Forms and UI
+django-crispy-forms==2.1
+crispy-tailwind==0.5.0
+
+# Static files and deployment
+whitenoise==6.6.0
+gunicorn==21.2.0
+
+# Image processing
+Pillow==10.1.0
+
+# Environment and configuration
+django-environ==0.11.2
+python-decouple==3.8
+
+# Security
+django-cors-headers==4.3.1
+
+# Development and debugging
+django-debug-toolbar==4.2.0
+django-extensions==3.2.3
+
+# Testing
+pytest==7.4.3
+pytest-django==4.7.0
+factory-boy==3.3.0
+
+# Code quality
+black==23.11.0
+flake8==6.1.0
+isort==5.12.0
+
+# Performance monitoring
+django-silk==5.0.4
+
+# Caching
+redis==5.0.1
+django-redis==5.4.0
+
+# Email
+django-anymail==10.2
+
+# API (for future use)
+djangorestframework==3.14.0
+django-cors-headers==4.3.1
+
+# Documentation
+Sphinx==7.2.6
+
+# Production
+sentry-sdk==1.38.0

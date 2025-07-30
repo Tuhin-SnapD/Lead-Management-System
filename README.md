@@ -1,256 +1,331 @@
 # Lead Management System
 
-A Django-based web application for managing leads and agents, designed to streamline the process of tracking, assigning, and following up with potential clients. This project is suitable for small businesses, sales teams, or anyone needing a simple CRM solution.
+A modern, scalable Django-based lead management system designed for sales teams and organizations to efficiently manage customer leads, agents, and sales processes.
 
----
+## 🚀 Features
 
-## Table of Contents
+### Core Functionality
+- **Lead Management**: Create, update, and track leads with comprehensive information
+- **Agent Management**: Manage sales agents with performance tracking
+- **Category System**: Organize leads by status (New, Contacted, Converted, Unconverted)
+- **Role-Based Access**: Separate permissions for organizers and agents
+- **Email Notifications**: Automated email notifications for lead assignments and updates
 
-- [Features](#features)
-- [Project Structure](#project-structure)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Running the Server](#running-the-server)
-- [Environment Variables](#environment-variables)
-- [Database](#database)
-- [Static Files](#static-files)
-- [Testing](#testing)
-- [Deployment](#deployment)
-- [Important Commands](#important-commands)
-- [License](#license)
-- [Contributing](#contributing)
-- [Contact](#contact)
+### Advanced Features
+- **Search & Filtering**: Advanced search and filtering capabilities for leads
+- **Performance Analytics**: Agent performance tracking and organization statistics
+- **Dashboard**: Comprehensive dashboard with key metrics and recent activity
+- **Responsive Design**: Modern UI built with Tailwind CSS
+- **API Ready**: REST API support for future integrations
 
----
+### Security & Performance
+- **Environment Configuration**: Secure environment variable management
+- **Database Optimization**: Efficient queries with proper indexing
+- **Caching Support**: Redis-based caching for improved performance
+- **Error Handling**: Comprehensive error handling and logging
+- **Production Ready**: Security headers and production optimizations
 
-## Features
+## 🛠️ Technology Stack
 
-- User authentication (login/logout)
-- Agent and lead management
-- Assign leads to agents
-- Admin interface for managing data
-- Custom forms for leads and agents
-- Modular app structure for scalability
-- Responsive UI with Django templates
-- Static files handling (CSS, JS, images)
-- Database integration (SQLite by default)
-- Easily extensible for new features
+- **Backend**: Django 4.2.7
+- **Database**: PostgreSQL (production), SQLite (development)
+- **Frontend**: Tailwind CSS, Crispy Forms
+- **Caching**: Redis
+- **Email**: Django Email Backend (configurable)
+- **Deployment**: Gunicorn, WhiteNoise
+- **Monitoring**: Sentry (optional)
 
----
-
-## Project Structure
-
-```
-.
-├── agents/                 # Django app for agent management
-│   ├── admin.py
-│   ├── apps.py
-│   ├── forms.py
-│   ├── mixins.py
-│   ├── models.py
-│   ├── tests.py
-│   ├── urls.py
-│   ├── views.py
-│   ├── migrations/
-│   └── templates/
-├── leads/                  # Django app for lead management
-│   ├── admin.py
-│   ├── apps.py
-│   ├── forms.py
-│   ├── models.py
-│   ├── urls.py
-│   ├── views.py
-│   ├── migrations/
-│   ├── templates/
-│   └── tests/
-├── server/                 # Django project config
-│   ├── __init__.py
-│   ├── asgi.py
-│   ├── settings.py
-│   ├── urls.py
-│   └── wsgi.py
-├── static/                 # Source static files (CSS, JS, images)
-├── static_root/            # Collected static files for deployment
-├── staticfiles/            # (May be used for static collection)
-├── templates/              # Global HTML templates
-├── db.sqlite3              # SQLite database (default)
-├── manage.py               # Django management script
-├── requirements.txt        # Python dependencies
-├── Procfile                # For deployment (e.g., Heroku)
-├── runtime.txt             # Python version for deployment
-├── runserver.sh            # Shell script to run the server
-├── .gitignore              # Git ignore rules
-├── README.md               # This file
-├── important commands.txt  # Handy command references
-└── dbdiagram.png           # Database schema diagram
-```
-
----
-
-## Installation
-
-### Prerequisites
+## 📋 Prerequisites
 
 - Python 3.8+
-- pip (Python package manager)
-- Git (for cloning the repo)
+- PostgreSQL (for production)
+- Redis (optional, for caching)
+- Git
 
-### Steps
+## 🚀 Quick Start
 
-1. **Clone the repository**
-    ```sh
-    git clone https://github.com/Tuhin-SnapD/Lead-Management-System.git
-    cd Lead-Management-System
-    ```
+### 1. Clone the Repository
 
-2. **Create and activate a virtual environment**
-    ```sh
-    python -m venv env
-    # On Windows:
-    env\Scripts\activate.bat
-    # On Unix/macOS:
-    source env/bin/activate
-    ```
+```bash
+git clone <repository-url>
+cd Lead-Management-System
+```
 
-3. **Install dependencies**
-    ```sh
-    pip install -r requirements.txt
-    ```
+### 2. Create Virtual Environment
 
-4. **Apply migrations**
-    ```sh
-    python manage.py migrate
-    ```
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
 
-5. **Create a superuser (admin)**
-    ```sh
-    python manage.py createsuperuser
-    ```
+### 3. Install Dependencies
 
----
+```bash
+pip install -r requirements.txt
+```
 
-## Usage
+### 4. Environment Configuration
 
-- **Start the development server:**
-    ```sh
-    python manage.py runserver
-    ```
-- Visit `http://127.0.0.1:8000/` in your browser.
+Copy the example environment file and configure it:
 
-- **Access Django Admin:**
-    - Go to `http://127.0.0.1:8000/admin/`
-    - Login with the superuser credentials you created.
+```bash
+cp env.example .env
+```
 
----
+Edit `.env` with your configuration:
 
-## Running the Server
+```env
+ENVIRONMENT=development
+DEBUG=True
+SECRET_KEY=your-secret-key-here
+ALLOWED_HOSTS=localhost,127.0.0.1
+```
 
-- **Using the provided shell script (Linux/macOS):**
-    ```sh
-    ./runserver.sh
-    ```
-- **Or manually:**
-    ```sh
-    python manage.py runserver
-    ```
+### 5. Database Setup
 
----
+For development (SQLite):
+```bash
+python manage.py migrate
+```
 
-## Environment Variables
+For production (PostgreSQL):
+```bash
+# Update .env with your database credentials
+python manage.py migrate
+```
 
-- By default, settings are managed in [`server/settings.py`](server/settings.py).
-- For production, set environment variables for `SECRET_KEY`, `DEBUG`, and `ALLOWED_HOSTS`.
-- You can use a `.env` file with [django-environ](https://django-environ.readthedocs.io/) if you wish to manage secrets securely.
+### 6. Create Superuser
 
----
+```bash
+python manage.py createsuperuser
+```
 
-## Database
+### 7. Run the Development Server
 
-- Default: SQLite (`db.sqlite3`)
-- To use PostgreSQL or another DB, update `DATABASES` in [`server/settings.py`](server/settings.py) and install the required Python packages.
+```bash
+python manage.py runserver
+```
 
----
+Visit `http://127.0.0.1:8000` to access the application.
 
-## Static Files
+## 🏗️ Project Structure
 
-- Place your static assets in the `static/` directory.
-- Run `python manage.py collectstatic` to collect static files into `static_root/` for production deployment.
-- Static files are served automatically in development.
+```
+Lead-Management-System/
+├── agents/                 # Agent management app
+│   ├── views.py           # Agent views
+│   ├── forms.py           # Agent forms
+│   ├── mixins.py          # Custom mixins
+│   └── templates/         # Agent templates
+├── leads/                  # Lead management app
+│   ├── models.py          # Data models
+│   ├── views.py           # Lead views
+│   ├── forms.py           # Lead forms
+│   ├── services.py        # Business logic services
+│   └── templates/         # Lead templates
+├── server/                 # Django project settings
+│   ├── settings.py        # Main settings
+│   ├── urls.py            # URL configuration
+│   └── wsgi.py            # WSGI configuration
+├── static/                 # Static files
+├── templates/              # Base templates
+├── media/                  # User uploaded files
+├── logs/                   # Application logs
+├── requirements.txt        # Python dependencies
+├── env.example            # Environment variables example
+└── README.md              # This file
+```
 
----
+## 🔧 Configuration
 
-## Testing
+### Environment Variables
 
-- To run tests for the apps:
-    ```sh
-    python manage.py test agents
-    python manage.py test leads
-    ```
-- Test files are located in `agents/tests.py` and `leads/tests/`.
+Key environment variables to configure:
 
----
+- `ENVIRONMENT`: Set to 'production' or 'development'
+- `SECRET_KEY`: Django secret key (generate a secure one)
+- `DEBUG`: Set to False in production
+- `ALLOWED_HOSTS`: Comma-separated list of allowed hosts
+- `DATABASE_URL`: Database connection string
+- `EMAIL_*`: Email configuration
+- `REDIS_URL`: Redis connection string (optional)
 
-## Deployment
+### Database Configuration
 
-- **Heroku:**  
-  The repository includes a `Procfile` and `runtime.txt` for easy deployment on Heroku.
-    - Set up environment variables on Heroku for production.
-    - Use `collectstatic` before deployment.
+The system supports both SQLite (development) and PostgreSQL (production):
 
-- **Other Platforms:**  
-  Adapt the deployment process as needed for your platform (e.g., Docker, AWS, DigitalOcean).
+```python
+# Development (SQLite)
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 
----
+# Production (PostgreSQL)
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
+    }
+}
+```
 
-## Important Commands
+## 🧪 Testing
 
-See [`important commands.txt`](important%20commands.txt) for a quick reference to common commands, including git and environment activation.
+Run the test suite:
 
----
+```bash
+# Install test dependencies
+pip install pytest pytest-django factory-boy
 
-## License
+# Run tests
+pytest
 
-- Source code: MIT License (see [`LICENSE`](staticfiles/admin/js/vendor/xregexp/LICENSE.txt) and [`LICENSE`](staticfiles/admin/js/vendor/select2/LICENSE.md))
-- Fonts: Apache License 2.0 ([`staticfiles/admin/fonts/LICENSE.txt`](staticfiles/admin/fonts/LICENSE.txt))
-- Icons: MIT License ([`staticfiles/admin/img/LICENSE`](staticfiles/admin/img/LICENSE))
+# Run with coverage
+pytest --cov=leads --cov=agents
+```
 
----
+## 📊 Performance Optimization
 
-## Contributing
+### Database Optimization
+
+- **Indexes**: Proper database indexes on frequently queried fields
+- **Select Related**: Optimized queries to reduce database hits
+- **Connection Pooling**: Database connection pooling for production
+
+### Caching
+
+Enable Redis caching for improved performance:
+
+```python
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': os.getenv('REDIS_URL'),
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}
+```
+
+### Static Files
+
+Static files are optimized for production:
+
+```bash
+python manage.py collectstatic
+```
+
+## 🔒 Security Features
+
+- **CSRF Protection**: Built-in CSRF protection
+- **XSS Protection**: Security headers for XSS prevention
+- **HTTPS Redirect**: Automatic HTTPS redirect in production
+- **Secure Cookies**: Secure cookie settings
+- **Input Validation**: Comprehensive form validation
+- **SQL Injection Protection**: Django ORM protection
+
+## 🚀 Deployment
+
+### Production Checklist
+
+1. **Environment Variables**: Set all production environment variables
+2. **Database**: Configure PostgreSQL database
+3. **Static Files**: Run `python manage.py collectstatic`
+4. **Migrations**: Run `python manage.py migrate`
+5. **Security**: Set `DEBUG=False` and configure `SECRET_KEY`
+6. **HTTPS**: Configure SSL certificates
+7. **Monitoring**: Set up Sentry for error tracking
+
+### Docker Deployment
+
+Create a `Dockerfile`:
+
+```dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+COPY . .
+RUN python manage.py collectstatic --noinput
+
+EXPOSE 8000
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "server.wsgi:application"]
+```
+
+### Heroku Deployment
+
+1. Create a Heroku app
+2. Add PostgreSQL addon
+3. Configure environment variables
+4. Deploy using Git
+
+```bash
+heroku create your-app-name
+heroku addons:create heroku-postgresql
+heroku config:set ENVIRONMENT=production
+git push heroku main
+```
+
+## 🤝 Contributing
 
 1. Fork the repository
-2. Create a new branch (`git checkout -b feature/my-feature`)
-3. Commit your changes (`git commit -am 'Add new feature'`)
-4. Push to the branch (`git push origin feature/my-feature`)
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
----
+### Code Style
 
-## Contact
+The project uses:
+- **Black**: Code formatting
+- **Flake8**: Linting
+- **isort**: Import sorting
 
-- **Author:** [Tuhin-SnapD](https://github.com/Tuhin-SnapD)
-- **Issues:** Please use the [GitHub Issues](https://github.com/Tuhin-SnapD/Lead-Management-System/issues) page for bug reports and feature requests.
+Run code quality checks:
 
----
+```bash
+black .
+flake8 .
+isort .
+```
 
-## Screenshots
+## 📝 License
 
-_Add screenshots or a demo GIF here to showcase the UI and features._
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
----
+## 🆘 Support
 
-## Database Diagram
+For support and questions:
 
-See [`dbdiagram.png`](dbdiagram.png) for a visual representation of the database schema.
+1. Check the [Issues](https://github.com/your-repo/issues) page
+2. Create a new issue with detailed information
+3. Contact the development team
 
----
+## 🔄 Changelog
 
-## Acknowledgements
+### Version 2.0.0 (Current)
+- Complete refactoring for performance and scalability
+- Added service layer for business logic
+- Improved security and error handling
+- Enhanced UI with modern design
+- Added comprehensive testing
+- Production-ready configuration
 
-- [Django](https://www.djangoproject.com/)
-- [Select2](https://select2.org/) (MIT License)
-- [XRegExp](http://xregexp.com/) (MIT License)
-- [Roboto Font](https://fonts.google.com/specimen/Roboto) (Apache License 2.0)
-- [Font Awesome](http://fontawesome.io/) (SIL OFL 1.1)
+### Version 1.0.0
+- Initial release with basic lead management features
 
----
+## 🙏 Acknowledgments
+
+- Django community for the excellent framework
+- Tailwind CSS for the beautiful UI components
+- All contributors who helped improve this project
