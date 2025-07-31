@@ -9,8 +9,7 @@ import logging
 from typing import Any, Dict
 from django.core.mail import send_mail
 from django.views import generic
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import reverse, get_object_or_404
+from django.shortcuts import reverse
 from django.contrib import messages
 from django.http import HttpResponse
 from django.core.exceptions import ValidationError

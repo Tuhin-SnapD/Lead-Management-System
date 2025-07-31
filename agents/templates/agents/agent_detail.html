@@ -1,31 +1,367 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ agent.user.first_name }} {{ agent.user.last_name }} - Agent Details - LeadFlow{% endblock %}
 
 {% block content %}
-
-<section class="text-gray-700 body-font overflow-hidden">
-    <div class="container px-5 py-24 mx-auto">
-      <div class="lg:w-4/5 mx-auto flex flex-wrap">
-        <div class="w-full lg:pr-10 lg:py-6 mb-6 lg:mb-0">
-            <h2 class="text-sm title-font text-gray-500 tracking-widest">AGENT</h2>
-            <h1 class="text-gray-900 text-3xl title-font font-medium mb-4">{{ agent.user.username }}</h1>
-            <div class="flex mb-4">
-                <a href="{% url 'agents:agent-detail' agent.pk %}" class="flex-grow text-indigo-500 border-b-2 border-indigo-500 py-2 text-lg px-1">
-                    Overview
-                </a>
-                <a href="{% url 'agents:agent-update' agent.pk %}" class="flex-grow border-b-2 border-gray-300 py-2 text-lg px-1">
-                    Update Details
-                </a>    
-            </div>
-            <div class="flex border-t border-gray-300 py-2">
-                <span class="text-gray-500">Full Name</span>
-                <span class="ml-auto text-gray-900">{{ agent.user.first_name }} {{ agent.user.last_name }}</span>
-            </div>
-            <div class="flex border-t border-gray-300 py-2">
-                <span class="text-gray-500">Email</span>
-                <span class="ml-auto text-gray-900">{{ agent.user.email }}</span>
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-10">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                <div class="flex items-center space-x-4">
+                    <a href="{% url 'agents:agent-list' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Back to Agents
+                    </a>
+                    <div class="h-6 w-px bg-gray-300"></div>
+                    <a href="{% url 'dashboard' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                        <i class="fas fa-tachometer-alt mr-2"></i>
+                        Dashboard
+                    </a>
+                </div>
+                <div class="text-center lg:text-right">
+                    <h1 class="text-3xl font-bold text-gray-900">Agent Profile</h1>
+                    <p class="text-lg text-gray-600 mt-2">Detailed view of agent information and performance</p>
+                </div>
             </div>
         </div>
-      </div>
+
+        <!-- Agent Profile Header -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-8 mb-8">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-6 lg:space-y-0">
+                <div class="flex items-center space-x-6">
+                    <div class="h-20 w-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-lg">
+                        {{ agent.user.first_name|first }}{{ agent.user.last_name|first }}
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">{{ agent.user.first_name }} {{ agent.user.last_name }}</h2>
+                        <p class="text-gray-600">@{{ agent.user.username }}</p>
+                        <div class="flex items-center mt-2">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-circle text-green-400 mr-2"></i>
+                                Active Agent
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <a href="{% url 'agents:agent-update' agent.pk %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                        <i class="fas fa-edit mr-2"></i>
+                        Edit Profile
+                    </a>
+                    <a href="{% url 'agents:agent-delete' agent.pk %}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200">
+                        <i class="fas fa-trash mr-2"></i>
+                        Delete Agent
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Statistics -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Total Leads -->
+            <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-shadow duration-300">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-users text-blue-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Total Leads</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ performance.total_leads|default:"0" }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assigned Leads -->
+            <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-shadow duration-300">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-handshake text-green-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Assigned Leads</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ performance.assigned_leads|default:"0" }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categorized Leads -->
+            <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-shadow duration-300">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-tags text-purple-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Categorized</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ performance.categorized_leads|default:"0" }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- This Week -->
+            <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-shadow duration-300">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-calendar-week text-orange-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">This Week</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ performance.leads_this_week|default:"0" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+            <!-- Agent Information -->
+            <div class="xl:col-span-2">
+                <div class="bg-white rounded-xl shadow-lg border border-gray-200">
+                    <!-- Contact Information -->
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900">Contact Information</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="flex items-center space-x-4">
+                                <div class="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-envelope text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500">Email Address</p>
+                                    <p class="text-sm text-gray-900">{{ agent.user.email }}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div class="h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-user text-green-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500">Username</p>
+                                    <p class="text-sm text-gray-900">@{{ agent.user.username }}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div class="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-building text-purple-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500">Organization</p>
+                                    <p class="text-sm text-gray-900">{{ agent.organisation.user.username }}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div class="h-10 w-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-calendar text-orange-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500">Member Since</p>
+                                    <p class="text-sm text-gray-900">{{ agent.user.date_joined|date:"M d, Y" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Leads -->
+                <div class="bg-white rounded-xl shadow-lg border border-gray-200 mt-8">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-semibold text-gray-900">Recent Leads</h3>
+                            <a href="{% url 'leads:lead-list' %}" class="text-sm text-blue-600 hover:text-blue-800 transition-colors duration-200">
+                                View All Leads
+                            </a>
+                        </div>
+                    </div>
+                    <div class="overflow-hidden">
+                        {% if recent_leads %}
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Lead
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Category
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Date Added
+                                        </th>
+                                        <th scope="col" class="relative px-6 py-3">
+                                            <span class="sr-only">Actions</span>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    {% for lead in recent_leads %}
+                                    <tr class="hover:bg-gray-50 transition-colors duration-200">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="h-8 w-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-xs">
+                                                    {{ lead.first_name|first }}{{ lead.last_name|first }}
+                                                </div>
+                                                <div class="ml-3">
+                                                    <div class="text-sm font-medium text-gray-900">
+                                                        {{ lead.first_name }} {{ lead.last_name }}
+                                                    </div>
+                                                    <div class="text-sm text-gray-500">{{ lead.email }}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            {% if lead.category %}
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" style="background-color: {{ lead.category.color }}20; color: {{ lead.category.color }};">
+                                                {{ lead.category.name }}
+                                            </span>
+                                            {% else %}
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                Uncategorized
+                                            </span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {{ lead.date_added|date:"M d, Y" }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <a href="{% url 'leads:lead-detail' lead.pk %}" class="text-blue-600 hover:text-blue-900 transition-colors duration-200">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="px-6 py-12 text-center">
+                            <div class="flex flex-col items-center">
+                                <div class="h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                    <i class="fas fa-users text-gray-400 text-2xl"></i>
+                                </div>
+                                <h3 class="text-lg font-medium text-gray-900 mb-2">No leads assigned yet</h3>
+                                <p class="text-gray-500 mb-4">This agent hasn't been assigned any leads yet.</p>
+                                <a href="{% url 'leads:lead-list' %}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200">
+                                    <i class="fas fa-plus mr-2"></i>
+                                    Assign Leads
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="xl:col-span-1">
+                <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 sticky top-8">
+                    <div class="mb-8">
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">Quick Actions</h3>
+                        <p class="text-gray-600">
+                            Manage this agent efficiently:
+                        </p>
+                    </div>
+
+                    <div class="space-y-4">
+                        <a href="{% url 'agents:agent-update' agent.pk %}" class="w-full flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                            <div class="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                                <i class="fas fa-edit text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-semibold text-gray-900">Edit Profile</h4>
+                                <p class="text-xs text-gray-500">Update agent information</p>
+                            </div>
+                        </a>
+
+                        <a href="{% url 'leads:lead-list' %}" class="w-full flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                            <div class="h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                                <i class="fas fa-handshake text-green-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-semibold text-gray-900">Assign Leads</h4>
+                                <p class="text-xs text-gray-500">Assign leads to this agent</p>
+                            </div>
+                        </a>
+
+                        <a href="{% url 'agents:agent-list' %}" class="w-full flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                            <div class="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
+                                <i class="fas fa-users text-purple-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-semibold text-gray-900">All Agents</h4>
+                                <p class="text-xs text-gray-500">View all team members</p>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="mt-8 pt-6 border-t border-gray-200">
+                        <h4 class="text-sm font-semibold text-gray-900 mb-4">Agent Stats</h4>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between text-sm">
+                                <span class="text-gray-600">Total Leads</span>
+                                <span class="font-medium text-gray-900">{{ performance.total_leads|default:"0" }}</span>
+                            </div>
+                            <div class="flex items-center justify-between text-sm">
+                                <span class="text-gray-600">Assigned Leads</span>
+                                <span class="font-medium text-green-600">{{ performance.assigned_leads|default:"0" }}</span>
+                            </div>
+                            <div class="flex items-center justify-between text-sm">
+                                <span class="text-gray-600">Categorized</span>
+                                <span class="font-medium text-blue-600">{{ performance.categorized_leads|default:"0" }}</span>
+                            </div>
+                            <div class="flex items-center justify-between text-sm">
+                                <span class="text-gray-600">This Week</span>
+                                <span class="font-medium text-orange-600">{{ performance.leads_this_week|default:"0" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </section>
-{% endblock content %}
+</div>
+
+<style>
+/* Animation for the cards */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.bg-white {
+    animation: slideInUp 0.6s ease-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1280px) {
+    .sticky {
+        position: static;
+    }
+}
+
+@media (max-width: 768px) {
+    .p-6 {
+        padding: 1rem;
+    }
+    
+    .space-y-4 > * + * {
+        margin-top: 1rem;
+    }
+}
+</style>
+{% endblock %}

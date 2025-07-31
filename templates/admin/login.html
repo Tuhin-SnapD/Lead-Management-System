@@ -1,0 +1,414 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    body {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    #container {
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        width: 100%;
+        max-width: 450px;
+        border: 1px solid var(--border-color);
+        animation: slideInUp 0.6s ease-out;
+    }
+
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    #header {
+        background: var(--gradient-primary);
+        color: white;
+        padding: 2.5rem 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    #header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        opacity: 0.2;
+    }
+
+    #header #branding h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    #header #branding h1::before {
+        content: '🔐';
+        font-size: 2.5rem;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    }
+
+    #header #branding h1 a {
+        color: white;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    #header #branding h1 a:hover {
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    #content {
+        padding: 2.5rem 2rem;
+        margin: 0;
+        max-width: none;
+    }
+
+    #content-main {
+        background: transparent;
+        box-shadow: none;
+        border-radius: 0;
+        overflow: visible;
+    }
+
+    .form-row {
+        margin-bottom: 2rem;
+        padding: 0;
+        border: none;
+    }
+
+    .form-row label {
+        display: block;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 0.75rem;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .form-row input {
+        width: 100%;
+        padding: 1rem 1.25rem;
+        border: 2px solid var(--border-color);
+        border-radius: 0.75rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: white;
+        font-family: inherit;
+    }
+
+    .form-row input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        transform: translateY(-1px);
+    }
+
+    .submit-row {
+        background: transparent;
+        padding: 0;
+        border: none;
+        display: block;
+        text-align: center;
+        margin-top: 2rem;
+    }
+
+    .submit-row input {
+        background: var(--gradient-primary);
+        color: white;
+        border: none;
+        padding: 1.25rem 2rem;
+        border-radius: 0.75rem;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-md);
+        width: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .submit-row input::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    .submit-row input:hover::before {
+        left: 100%;
+    }
+
+    .submit-row input:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .errornote {
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        color: #991b1b;
+        border: 1px solid #ef4444;
+        padding: 1.25rem 1.75rem;
+        border-radius: 0.75rem;
+        margin-bottom: 2rem;
+        font-weight: 500;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .errornote::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: #ef4444;
+        opacity: 0.3;
+    }
+
+    .help {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        margin-top: 0.75rem;
+        font-style: italic;
+    }
+
+    .password-reset-link {
+        text-align: center;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .password-reset-link a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        background: rgba(59, 130, 246, 0.1);
+    }
+
+    .password-reset-link a:hover {
+        color: var(--primary-hover);
+        background: rgba(59, 130, 246, 0.15);
+        transform: translateY(-1px);
+    }
+
+    /* Enhanced form styling */
+    .form-row input[type="text"],
+    .form-row input[type="password"] {
+        position: relative;
+    }
+
+    .form-row input[type="text"]::placeholder,
+    .form-row input[type="password"]::placeholder {
+        color: #9ca3af;
+        font-weight: 400;
+    }
+
+    /* Success message styling */
+    .successnote {
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        color: #065f46;
+        border: 1px solid #10b981;
+        padding: 1.25rem 1.75rem;
+        border-radius: 0.75rem;
+        margin-bottom: 2rem;
+        font-weight: 500;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .successnote::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: #10b981;
+        opacity: 0.3;
+    }
+
+    /* Loading state */
+    .loading {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+
+    .loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        margin: -10px 0 0 -10px;
+        border: 2px solid transparent;
+        border-top: 2px solid white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 480px) {
+        body {
+            padding: 1rem;
+        }
+
+        #header {
+            padding: 2rem 1.5rem;
+        }
+
+        #content {
+            padding: 2rem 1.5rem;
+        }
+
+        #header #branding h1 {
+            font-size: 1.75rem;
+        }
+
+        #header #branding h1::before {
+            font-size: 2rem;
+        }
+
+        .form-row input {
+            padding: 0.875rem 1rem;
+        }
+
+        .submit-row input {
+            padding: 1rem 1.5rem;
+        }
+    }
+
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+        #container {
+            background: #1f2937;
+            border-color: #374151;
+        }
+
+        .form-row input {
+            background: #374151;
+            border-color: #4b5563;
+            color: white;
+        }
+
+        .form-row input:focus {
+            border-color: var(--primary-color);
+            background: #374151;
+        }
+
+        .form-row label {
+            color: #f9fafb;
+        }
+
+        .help {
+            color: #9ca3af;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} login{% endblock %}
+
+{% block usertools %}{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block content_title %}{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block content %}
+{% if form.errors and not form.non_field_errors %}
+<p class="errornote">
+{% blocktrans count counter=form.errors.items|length %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktrans %}
+</p>
+{% endif %}
+
+{% if form.non_field_errors %}
+{% for error in form.non_field_errors %}
+<p class="errornote">
+    {{ error }}
+</p>
+{% endfor %}
+{% endif %}
+
+<div id="content-main">
+    {% if user.is_authenticated %}
+    <p class="errornote">
+    {% blocktrans trimmed %}
+        You are authenticated as {{ username }}, but are not authorized to
+        access this page. Would you like to login to a different account?
+    {% endblocktrans %}
+    </p>
+    {% endif %}
+
+    <form action="{{ app_path }}" method="post" id="login-form">{% csrf_token %}
+        <div class="form-row">
+            {{ form.username.errors }}
+            {{ form.username.label_tag }} {{ form.username }}
+            {% if form.username.help_text %}
+            <div class="help">{{ form.username.help_text }}</div>
+            {% endif %}
+        </div>
+        <div class="form-row">
+            {{ form.password.errors }}
+            {{ form.password.label_tag }} {{ form.password }}
+            {% if form.password.help_text %}
+            <div class="help">{{ form.password.help_text }}</div>
+            {% endif %}
+        </div>
+        {% url 'admin_password_reset' as password_reset_url %}
+        {% if password_reset_url %}
+        <div class="password-reset-link">
+            <a href="{{ password_reset_url }}">{% trans 'Forgotten your password?' %}</a>
+        </div>
+        {% endif %}
+        <div class="submit-row">
+            <input type="submit" value="{% trans 'Log in' %}">
+        </div>
+    </form>
+</div>
+{% endblock %} 

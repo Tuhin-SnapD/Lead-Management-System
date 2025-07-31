@@ -47,6 +47,11 @@ class User(AbstractUser):
         """Return the user's full name."""
         return f"{self.first_name} {self.last_name}".strip() or self.username
 
+    def save(self, *args, **kwargs):
+        """Override save to ensure email is lowercase."""
+        self.email = self.email.lower()
+        super().save(*args, **kwargs)
+
 
 class UserProfile(models.Model):
     """
@@ -280,7 +285,6 @@ class Lead(models.Model):
 
     def mark_contacted(self) -> None:
         """Mark the lead as contacted."""
-        from django.utils import timezone
         self.last_contacted = timezone.now()
         self.save(update_fields=['last_contacted', 'updated_at'])
 

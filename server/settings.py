@@ -13,8 +13,7 @@ from typing import List
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Environment configuration
-ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
-DEBUG = ENVIRONMENT == 'development'
+DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
 # Security settings
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-i_+)n=zim)5p7tu)*w_!leq^mv8h0%p%meyto@3i)5&_ctmd$)')
@@ -26,7 +25,6 @@ if not DEBUG:
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_SECONDS = 31536000
-    SECURE_REDIRECT_EXEMPT = []
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
@@ -99,7 +97,7 @@ DATABASES = {
 }
 
 # Use PostgreSQL in production
-if ENVIRONMENT == 'production':
+if not DEBUG:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -149,6 +147,8 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # Static files optimization
 if not DEBUG:
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+else:
+    STATICFILES_STORAGE = 'whitenoise.storage.StaticFilesStorage'
 
 # Media files
 MEDIA_URL = '/media/'

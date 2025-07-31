@@ -17,42 +17,15 @@ gunicorn==21.2.0
 Pillow==10.1.0
 
 # Environment and configuration
-django-environ==0.11.2
 python-decouple==3.8
-
-# Security
-django-cors-headers==4.3.1
 
 # Development and debugging
 django-debug-toolbar==4.2.0
-django-extensions==3.2.3
 
 # Testing
 pytest==7.4.3
 pytest-django==4.7.0
-factory-boy==3.3.0
 
 # Code quality
 black==23.11.0
 flake8==6.1.0
-isort==5.12.0
-
-# Performance monitoring
-django-silk==5.0.4
-
-# Caching
-redis==5.0.1
-django-redis==5.4.0
-
-# Email
-django-anymail==10.2
-
-# API (for future use)
-djangorestframework==3.14.0
-django-cors-headers==4.3.1
-
-# Documentation
-Sphinx==7.2.6
-
-# Production
-sentry-sdk==1.38.0

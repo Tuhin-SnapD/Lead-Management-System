@@ -6,8 +6,8 @@ including lead creation, user registration, and agent assignment forms.
 """
 
 from django import forms
-from django.contrib.auth import get_user_model
-from django.contrib.auth.forms import UserCreationForm, UsernameField
+from django.contrib.auth import get_user_model, authenticate
+from django.contrib.auth.forms import UserCreationForm, UsernameField, AuthenticationForm
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from typing import Any, Dict
@@ -16,6 +16,69 @@ from .models import Lead, Agent, Category
 from .services import LeadService
 
 User = get_user_model()
+
+
+class CustomLoginForm(AuthenticationForm):
+    """
+    Custom login form with improved styling and validation.
+    
+    This form extends Django's AuthenticationForm to provide better
+    user experience and validation for the lead management system.
+    """
+    
+    username = forms.CharField(
+        label=_('Username'),
+        widget=forms.TextInput(attrs={
+            'class': 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm',
+            'placeholder': _('Enter your username'),
+            'autocomplete': 'username'
+        })
+    )
+    
+    password = forms.CharField(
+        label=_('Password'),
+        widget=forms.PasswordInput(attrs={
+            'class': 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm',
+            'placeholder': _('Enter your password'),
+            'autocomplete': 'current-password'
+        })
+    )
+    
+    remember_me = forms.BooleanField(
+        required=False,
+        initial=False,
+        widget=forms.CheckboxInput(attrs={
+            'class': 'h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded'
+        }),
+        label=_('Remember me')
+    )
+
+    def clean(self) -> Dict[str, Any]:
+        """Clean and validate the form data."""
+        username = self.cleaned_data.get('username')
+        password = self.cleaned_data.get('password')
+
+        if username and password:
+            self.user_cache = authenticate(
+                self.request, username=username, password=password
+            )
+            if self.user_cache is None:
+                raise ValidationError(
+                    _('Invalid username or password. Please try again.'),
+                    code='invalid_login',
+                )
+            else:
+                self.confirm_login_allowed(self.user_cache)
+
+        return self.cleaned_data
+
+    def confirm_login_allowed(self, user: User) -> None:
+        """Check if the user is allowed to log in."""
+        if not user.is_active:
+            raise ValidationError(
+                _('This account is inactive. Please contact support.'),
+                code='inactive',
+            )
 
 
 class LeadModelForm(forms.ModelForm):
@@ -176,51 +239,81 @@ class CustomUserCreationForm(UserCreationForm):
     user experience and validation for the lead management system.
     """
     
+    username = forms.CharField(
+        label=_('Username'),
+        widget=forms.TextInput(attrs={
+            'class': 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm',
+            'placeholder': _('Choose a username'),
+            'autocomplete': 'username'
+        }),
+        help_text=_('Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.')
+    )
+    
+    email = forms.EmailField(
+        label=_('Email'),
+        widget=forms.EmailInput(attrs={
+            'class': 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm',
+            'placeholder': _('Enter your email address'),
+            'autocomplete': 'email'
+        }),
+        help_text=_('Enter a valid email address.')
+    )
+    
+    first_name = forms.CharField(
+        label=_('First Name'),
+        widget=forms.TextInput(attrs={
+            'class': 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm',
+            'placeholder': _('Enter your first name'),
+            'autocomplete': 'given-name'
+        }),
+        help_text=_('Enter your first name.')
+    )
+    
+    last_name = forms.CharField(
+        label=_('Last Name'),
+        widget=forms.TextInput(attrs={
+            'class': 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm',
+            'placeholder': _('Enter your last name'),
+            'autocomplete': 'family-name'
+        }),
+        help_text=_('Enter your last name.')
+    )
+    
     password1 = forms.CharField(
         label=_('Password'),
         widget=forms.PasswordInput(attrs={
-            'class': 'form-input',
-            'placeholder': _('Enter password')
+            'class': 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm',
+            'placeholder': _('Create a strong password'),
+            'autocomplete': 'new-password'
         }),
         help_text=_('Your password must contain at least 8 characters.')
     )
+    
     password2 = forms.CharField(
         label=_('Confirm Password'),
         widget=forms.PasswordInput(attrs={
-            'class': 'form-input',
-            'placeholder': _('Confirm password')
+            'class': 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm',
+            'placeholder': _('Confirm your password'),
+            'autocomplete': 'new-password'
         }),
         help_text=_('Enter the same password as before, for verification.')
+    )
+    
+    terms_accepted = forms.BooleanField(
+        required=True,
+        widget=forms.CheckboxInput(attrs={
+            'class': 'h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded'
+        }),
+        label=_('I agree to the Terms of Service and Privacy Policy'),
+        error_messages={
+            'required': _('You must accept the terms and conditions to continue.')
+        }
     )
     
     class Meta:
         model = User
         fields = ("username", "email", "first_name", "last_name")
         field_classes = {'username': UsernameField}
-        widgets = {
-            'username': forms.TextInput(attrs={
-                'class': 'form-input',
-                'placeholder': _('Enter username')
-            }),
-            'email': forms.EmailInput(attrs={
-                'class': 'form-input',
-                'placeholder': _('Enter email address')
-            }),
-            'first_name': forms.TextInput(attrs={
-                'class': 'form-input',
-                'placeholder': _('Enter first name')
-            }),
-            'last_name': forms.TextInput(attrs={
-                'class': 'form-input',
-                'placeholder': _('Enter last name')
-            }),
-        }
-        help_texts = {
-            "username": _("Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."),
-            "email": _("Enter a valid email address."),
-            "first_name": _("Enter your first name."),
-            "last_name": _("Enter your last name."),
-        }
 
     def clean_email(self) -> str:
         """Validate email uniqueness."""
@@ -228,6 +321,24 @@ class CustomUserCreationForm(UserCreationForm):
         if email and User.objects.filter(email=email).exists():
             raise ValidationError(_('A user with this email already exists.'))
         return email
+
+    def clean_username(self) -> str:
+        """Validate username uniqueness and format."""
+        username = self.cleaned_data.get('username')
+        if username:
+            if User.objects.filter(username=username).exists():
+                raise ValidationError(_('A user with this username already exists.'))
+            if len(username) < 3:
+                raise ValidationError(_('Username must be at least 3 characters long.'))
+        return username
+
+    def clean_password2(self) -> str:
+        """Validate password confirmation."""
+        password1 = self.cleaned_data.get("password1")
+        password2 = self.cleaned_data.get("password2")
+        if password1 and password2 and password1 != password2:
+            raise ValidationError(_("Passwords don't match."))
+        return password2
 
     def save(self, commit: bool = True) -> User:
         """Save the user and create default categories."""
@@ -255,9 +366,14 @@ class AssignAgentForm(forms.Form):
         queryset=Agent.objects.none(),
         empty_label=_("Select an agent"),
         widget=forms.Select(attrs={
-            'class': 'form-select'
+            'class': 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm',
+            'placeholder': _('Choose an agent to assign')
         }),
-        help_text=_("Choose an agent to assign to this lead.")
+        help_text=_("Choose an agent to assign to this lead."),
+        error_messages={
+            'required': _('Please select an agent to assign to this lead.'),
+            'invalid_choice': _('Please select a valid agent from the list.')
+        }
     )
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -270,6 +386,15 @@ class AssignAgentForm(forms.Form):
                 organisation=request.user.userprofile,
                 is_active=True
             ).select_related('user').order_by('user__first_name', 'user__last_name')
+            
+            # Customize the choices to show more information
+            choices = [('', _('Select an agent'))]
+            for agent in self.fields["agent"].queryset:
+                choices.append((
+                    agent.id, 
+                    f"{agent.user.get_full_name()} ({agent.user.email})"
+                ))
+            self.fields["agent"].choices = choices
 
 
 class LeadCategoryUpdateForm(forms.ModelForm):

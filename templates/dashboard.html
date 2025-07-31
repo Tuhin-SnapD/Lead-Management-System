@@ -2,35 +2,149 @@
 {% load static %}
 
 {% block content %}
-<section class="text-gray-700 body-font">
-    <div class="container mx-auto flex px-5 py-24 items-center justify-center flex-col">
-      <div class="text-center lg:w-2/3 w-full">
-        <h1 class="title-font sm:text-4xl text-3xl mb-4 font-medium text-gray-900">
-            CRM Dashboard
-        </h1>
-    
-        <div class="flex flex-wrap -m-4 text-center">
-            <div class="p-4 md:w-1/3 sm:w-1/2 w-full">
-                <div class="border-2 border-gray-200 px-4 py-6 rounded-lg">
-                <h2 class="title-font font-medium text-3xl text-gray-900">{{ total_lead_count }}</h2>
-                <p class="leading-relaxed">Total Leads</p>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header Section -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
+        <p class="text-gray-600">Welcome back, {{ request.user.username }}! Here's an overview of your lead management system.</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <!-- Total Leads Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover-lift">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-users text-blue-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Total Leads</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ total_lead_count }}</p>
                 </div>
             </div>
-            <div class="p-4 md:w-1/3 sm:w-1/2 w-full">
-                <div class="border-2 border-gray-200 px-4 py-6 rounded-lg">
-                <h2 class="title-font font-medium text-3xl text-gray-900">{{ total_in_past30 }}</h2>
-                <p class="leading-relaxed">Leads added in last 30 days</p>
-                </div>
-            </div>
-            <div class="p-4 md:w-1/3 sm:w-1/2 w-full">
-                <div class="border-2 border-gray-200 px-4 py-6 rounded-lg">
-                <h2 class="title-font font-medium text-3xl text-gray-900">{{ converted_in_past30 }}</h2>
-                <p class="leading-relaxed">Converted in last 30 days</p>
+            <div class="mt-4">
+                <div class="flex items-center text-sm text-green-600">
+                    <i class="fas fa-arrow-up mr-1"></i>
+                    <span>Active pipeline</span>
                 </div>
             </div>
         </div>
-        
-      </div>
+
+        <!-- Recent Leads Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover-lift">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-plus text-green-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">New Leads (30 days)</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ total_in_past30 }}</p>
+                </div>
+            </div>
+            <div class="mt-4">
+                <div class="flex items-center text-sm text-blue-600">
+                    <i class="fas fa-chart-line mr-1"></i>
+                    <span>Growing steadily</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Converted Leads Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover-lift">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-check-circle text-purple-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Converted (30 days)</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ converted_in_past30 }}</p>
+                </div>
+            </div>
+            <div class="mt-4">
+                <div class="flex items-center text-sm text-purple-600">
+                    <i class="fas fa-trophy mr-1"></i>
+                    <span>Success rate</span>
+                </div>
+            </div>
+        </div>
     </div>
-</section>
+
+    <!-- Quick Actions -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <a href="{% url 'leads:lead-create' %}" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                    <i class="fas fa-plus text-blue-600"></i>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-900">Add New Lead</p>
+                    <p class="text-sm text-gray-600">Create a new lead entry</p>
+                </div>
+            </a>
+            
+            <a href="{% url 'leads:lead-list' %}" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                    <i class="fas fa-list text-green-600"></i>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-900">View All Leads</p>
+                    <p class="text-sm text-gray-600">Browse your lead database</p>
+                </div>
+            </a>
+            
+            <a href="{% url 'leads:category-list' %}" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                    <i class="fas fa-tags text-purple-600"></i>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-900">Manage Categories</p>
+                    <p class="text-sm text-gray-600">Organize your leads</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h2>
+        <div class="space-y-4">
+            <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                    <i class="fas fa-user-plus text-blue-600 text-sm"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-gray-900">New lead added</p>
+                    <p class="text-xs text-gray-600">2 hours ago</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                    <i class="fas fa-check text-green-600 text-sm"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-gray-900">Lead converted</p>
+                    <p class="text-xs text-gray-600">1 day ago</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                    <i class="fas fa-tag text-purple-600 text-sm"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-gray-900">Category updated</p>
+                    <p class="text-xs text-gray-600">3 days ago</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock content %}

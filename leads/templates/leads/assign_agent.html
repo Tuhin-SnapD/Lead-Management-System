@@ -1,12 +1,250 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block title %}Assign Agent - {{ lead.full_name }}{% endblock %}
 
 {% block content %}
-    <a href="{% url 'leads:lead-list' %}">Go back to leads</a>
-    <hr />
-    <h1>Assign an agent to this lead</h1>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Submit</button>
-    </form>
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <a href="{% url 'leads:lead-list' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Back to Leads
+                    </a>
+                    <div class="h-6 w-px bg-gray-300"></div>
+                    <a href="{% url 'leads:lead-detail' lead.pk %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                        <i class="fas fa-eye mr-2"></i>
+                        View Lead
+                    </a>
+                </div>
+                <div class="text-right">
+                    <h1 class="text-2xl font-bold text-gray-900">Assign Agent</h1>
+                    <p class="text-sm text-gray-600">Select an agent to handle this lead</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Lead Information Card -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="h-12 w-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                            <span class="text-white font-semibold text-lg">
+                                {{ lead.first_name|first|upper }}{{ lead.last_name|first|upper }}
+                            </span>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-semibold text-gray-900">{{ lead.full_name }}</h3>
+                            <p class="text-sm text-gray-600">Lead #{{ lead.id }}</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <!-- Contact Information -->
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-700 mb-2">Contact Information</h4>
+                            <div class="space-y-2">
+                                {% if lead.email %}
+                                <div class="flex items-center text-sm">
+                                    <i class="fas fa-envelope text-gray-400 mr-3 w-4"></i>
+                                    <span class="text-gray-900">{{ lead.email }}</span>
+                                </div>
+                                {% endif %}
+                                {% if lead.phone_number %}
+                                <div class="flex items-center text-sm">
+                                    <i class="fas fa-phone text-gray-400 mr-3 w-4"></i>
+                                    <span class="text-gray-900">{{ lead.phone_number }}</span>
+                                </div>
+                                {% endif %}
+                                {% if lead.age %}
+                                <div class="flex items-center text-sm">
+                                    <i class="fas fa-birthday-cake text-gray-400 mr-3 w-4"></i>
+                                    <span class="text-gray-900">{{ lead.age }} years old</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Lead Details -->
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-700 mb-2">Lead Details</h4>
+                            <div class="space-y-2">
+                                {% if lead.source %}
+                                <div class="flex items-center text-sm">
+                                    <i class="fas fa-tag text-gray-400 mr-3 w-4"></i>
+                                    <span class="text-gray-900">{{ lead.source }}</span>
+                                </div>
+                                {% endif %}
+                                {% if lead.category %}
+                                <div class="flex items-center text-sm">
+                                    <i class="fas fa-folder text-gray-400 mr-3 w-4"></i>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" style="background-color: {{ lead.category.color }}20; color: {{ lead.category.color }};">
+                                        {{ lead.category.name }}
+                                    </span>
+                                </div>
+                                {% endif %}
+                                <div class="flex items-center text-sm">
+                                    <i class="fas fa-calendar text-gray-400 mr-3 w-4"></i>
+                                    <span class="text-gray-900">Added {{ lead.date_added|date:"M d, Y" }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Current Status -->
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-700 mb-2">Current Status</h4>
+                            <div class="flex items-center">
+                                {% if lead.agent %}
+                                <div class="flex items-center">
+                                    <div class="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-user-check text-green-600 text-sm"></i>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm font-medium text-gray-900">Assigned to {{ lead.agent.user.get_full_name }}</p>
+                                        <p class="text-xs text-gray-500">Currently assigned</p>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <div class="flex items-center">
+                                    <div class="h-8 w-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-user-clock text-yellow-600 text-sm"></i>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm font-medium text-gray-900">Unassigned</p>
+                                        <p class="text-xs text-gray-500">No agent assigned</p>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agent Assignment Form -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div class="mb-6">
+                        <h2 class="text-lg font-semibold text-gray-900 mb-2">Select an Agent</h2>
+                        <p class="text-sm text-gray-600">
+                            Choose the best agent to handle this lead based on their expertise and current workload.
+                        </p>
+                    </div>
+
+                    <form method="post" class="space-y-6">
+                        {% csrf_token %}
+                        
+                        <!-- Agent Selection -->
+                        <div>
+                            <label for="{{ form.agent.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-3">
+                                <i class="fas fa-users mr-2"></i>Available Agents
+                            </label>
+                            
+                            {% if available_agents %}
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                {% for agent in available_agents %}
+                                <div class="relative">
+                                    <input type="radio" name="{{ form.agent.name }}" value="{{ agent.id }}" id="agent_{{ agent.id }}" class="sr-only" {% if form.agent.value == agent.id %}checked{% endif %}>
+                                    <label for="agent_{{ agent.id }}" class="block cursor-pointer">
+                                        <div class="border-2 border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors duration-200 peer-checked:border-blue-500 peer-checked:bg-blue-50">
+                                            <div class="flex items-center">
+                                                <div class="h-10 w-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                                                    <span class="text-white font-semibold text-sm">
+                                                        {{ agent.user.first_name|first|upper }}{{ agent.user.last_name|first|upper }}
+                                                    </span>
+                                                </div>
+                                                <div class="ml-3 flex-1">
+                                                    <div class="flex items-center justify-between">
+                                                        <div>
+                                                            <p class="text-sm font-medium text-gray-900">{{ agent.user.get_full_name }}</p>
+                                                            <p class="text-xs text-gray-500">{{ agent.user.email }}</p>
+                                                        </div>
+                                                        <div class="flex items-center">
+                                                            <div class="h-2 w-2 bg-green-400 rounded-full mr-2"></div>
+                                                            <span class="text-xs text-gray-500">Active</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="text-center py-8">
+                                <div class="mx-auto h-12 w-12 text-gray-400">
+                                    <i class="fas fa-users text-4xl"></i>
+                                </div>
+                                <h3 class="mt-2 text-sm font-medium text-gray-900">No agents available</h3>
+                                <p class="mt-1 text-sm text-gray-500">There are no active agents in your organization.</p>
+                                <div class="mt-6">
+                                    <a href="{% url 'agents:agent-create' %}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                        <i class="fas fa-plus mr-2"></i>
+                                        Add Agent
+                                    </a>
+                                </div>
+                            </div>
+                            {% endif %}
+
+
+                        </div>
+
+                        <!-- Form Errors -->
+                        {% if form.non_field_errors %}
+                        <div class="bg-red-50 border border-red-200 rounded-md p-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-exclamation-circle text-red-400"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-red-800">
+                                        There was an error with your submission
+                                    </h3>
+                                    <div class="mt-2 text-sm text-red-700">
+                                        <ul class="list-disc pl-5 space-y-1">
+                                            {% for error in form.non_field_errors %}
+                                            <li>{{ error }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Action Buttons -->
+                        <div class="flex items-center justify-between pt-6 border-t border-gray-200">
+                            <a href="{% url 'leads:lead-detail' lead.pk %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                                <i class="fas fa-times mr-2"></i>
+                                Cancel
+                            </a>
+                            <button type="submit" class="inline-flex items-center px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 transform hover:scale-105" {% if not available_agents %}disabled{% endif %}>
+                                <i class="fas fa-user-check mr-2"></i>
+                                Assign Agent
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Custom styling for radio buttons */
+input[type="radio"]:checked + label > div {
+    border-color: #3b82f6;
+    background-color: #eff6ff;
+}
+
+/* Custom styling for select dropdown */
+select {
+    @apply block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm;
+}
+</style>
 {% endblock content %}

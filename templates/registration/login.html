@@ -1,44 +1,139 @@
 {% extends 'base.html' %}
 {% load tailwind_filters %}
 {% load static %}
+
 {% block content %}
-<div class="row">
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <!-- Header -->
+        <div class="text-center">
+            <div class="mx-auto h-16 w-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mb-6">
+                <i class="fas fa-chart-line text-white text-2xl"></i>
+            </div>
+            <h2 class="text-3xl font-bold text-gray-900">Welcome back</h2>
+            <p class="mt-2 text-sm text-gray-600">
+                Sign in to your LeadFlow account
+            </p>
+        </div>
 
-    <div class="column one">
-        <div class="text-3xl mt-6 font-semibold" id="Welcome">
-            <h1>Welcome to your<br> Dashboard</h1>
-        </div>
-            <p>
-                <div class="text-lg mt-4">
-                This is the homepage of lead <br>
-                management system, login now to begin</p>
-            
-            <div class="mt-6">
-            <img src="{% static 'images/illustration.svg' %}" alt="" width="auto" height="auto">
-        </div>
-        </div>
-    </div>
+        <!-- Login Form -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Username Field -->
+                <div>
+                    <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-user mr-2"></i>{{ form.username.label }}
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-user text-gray-400"></i>
+                        </div>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {{ form.username.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
 
-    <div class="column two">
-        <div class="max-w-lg mx-auto">
-            <div class="box-border rounded-md h-300 w-300 p-8 ml-8 border-2 mt-20">
-                <div class="text-2xl py-2 font-semibold">Login into your Account</div>
-                <form method="post" class="mt-5">
-                    {% csrf_token %}
-                    {{ form|crispy }}
-                    <button type='submit' class="w-full text-white bg-blue-500 hover:bg-blue-600 mt-2 px-3 py-2 rounded-md">
-                        Login
+                <!-- Password Field -->
+                <div>
+                    <label for="{{ form.password.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-lock mr-2"></i>{{ form.password.label }}
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-lock text-gray-400"></i>
+                        </div>
+                        {{ form.password }}
+                        {% if form.password.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {{ form.password.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Remember Me Checkbox -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        {{ form.remember_me }}
+                        <label for="{{ form.remember_me.id_for_label }}" class="ml-2 block text-sm text-gray-900">
+                            {{ form.remember_me.label }}
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div>
+                    <button type="submit" class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 transform hover:scale-105">
+                        <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                            <i class="fas fa-sign-in-alt text-blue-300 group-hover:text-blue-200"></i>
+                        </span>
+                        Sign in
                     </button>
-                </form>
+                </div>
 
-                <div class="pt-5 border-t border-gray-200 mt-5">
-                    <p class="text-center"><a class="hover:text-blue-500 " href="{% url 'reset-password' %}">Forgot password?</a></p>
+                <!-- Form Errors -->
+                {% if form.non_field_errors %}
+                    <div class="bg-red-50 border border-red-200 rounded-md p-4">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-exclamation-circle text-red-400"></i>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="text-sm font-medium text-red-800">
+                                    There was an error with your submission
+                                </h3>
+                                <div class="mt-2 text-sm text-red-700">
+                                    <ul class="list-disc pl-5 space-y-1">
+                                        {% for error in form.non_field_errors %}
+                                            <li>{{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </form>
 
-                    <p class="text-center"> New here? <a class="text-blue-500 hover:text-black-500 " href="{% url 'signup' %}">Register now</a></p>
+            <!-- Links -->
+            <div class="mt-6">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white text-gray-500">Need help?</span>
+                    </div>
+                </div>
+
+                <div class="mt-6 grid grid-cols-1 gap-3">
+                    <a href="{% url 'reset-password' %}" class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors duration-200">
+                        <i class="fas fa-key mr-2"></i>
+                        Forgot password?
+                    </a>
+                    
+                    <div class="text-center">
+                        <span class="text-sm text-gray-600">New to LeadFlow? </span>
+                        <a href="{% url 'signup' %}" class="font-medium text-blue-600 hover:text-blue-500 transition-colors duration-200">
+                            Create an account
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <!-- Footer -->
+        <div class="text-center">
+            <p class="text-xs text-gray-500">
+                By signing in, you agree to our terms of service and privacy policy.
+            </p>
+        </div>
     </div>
 </div>
-
 {% endblock content %}

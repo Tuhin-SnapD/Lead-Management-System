@@ -2,22 +2,166 @@
 {% load static %}
 
 {% block content %}
-<section class="text-gray-700 body-font">
-    <div class="container mx-auto flex px-5 py-24 items-center justify-center flex-col">
-      <img class="lg:w-2/6 md:w-3/6 w-5/6 mb-10 object-cover object-center rounded" alt="hero" src="{% static 'images/dashboard.svg' %}">
-      <div class="text-center lg:w-2/3 w-full">
-        <h1 class="title-font sm:text-4xl text-3xl mb-4 font-medium text-gray-900">
-            Lead Management System
-        </h1>
-        <p class="mb-8 leading-relaxed">
-            Able Externship
-        </p>
-        <div class="flex justify-center">
-          <a href="{% url 'login' %}" class="inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg">
-            Login to get started
-          </a>
+<!-- Hero Section -->
+<div class="relative bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 overflow-hidden">
+    <div class="absolute inset-0 bg-black opacity-10"></div>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-6xl font-bold text-white mb-6">
+                Streamline Your
+                <span class="text-yellow-300">Lead Management</span>
+            </h1>
+            <p class="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
+                Transform your business with our powerful lead management system. Track, organize, and convert leads efficiently with our intuitive platform.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="{% url 'signup' %}" class="inline-flex items-center px-8 py-4 border border-transparent text-lg font-medium rounded-lg text-blue-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-all duration-200 transform hover:scale-105">
+                    <i class="fas fa-rocket mr-2"></i>
+                    Get Started Free
+                </a>
+                <a href="{% url 'login' %}" class="inline-flex items-center px-8 py-4 border-2 border-white text-lg font-medium rounded-lg text-white hover:bg-white hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-all duration-200">
+                    <i class="fas fa-sign-in-alt mr-2"></i>
+                    Sign In
+                </a>
+            </div>
         </div>
-      </div>
     </div>
-</section>
+    
+    <!-- Wave Divider -->
+    <div class="absolute bottom-0 left-0 right-0">
+        <svg class="w-full h-16 text-white" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" fill="currentColor"></path>
+            <path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".5" fill="currentColor"></path>
+            <path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" fill="currentColor"></path>
+        </svg>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="py-24 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                Everything you need to manage leads
+            </h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Our comprehensive platform provides all the tools you need to capture, organize, and convert leads effectively.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Feature 1 -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 hover-lift">
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
+                    <i class="fas fa-users text-blue-600 text-xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Lead Capture</h3>
+                <p class="text-gray-600">
+                    Easily capture and store lead information with our intuitive forms and data entry system.
+                </p>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 hover-lift">
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-6">
+                    <i class="fas fa-tags text-green-600 text-xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Smart Categorization</h3>
+                <p class="text-gray-600">
+                    Organize leads with custom categories and tags to streamline your workflow.
+                </p>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 hover-lift">
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-6">
+                    <i class="fas fa-chart-line text-purple-600 text-xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Analytics & Insights</h3>
+                <p class="text-gray-600">
+                    Track performance with detailed analytics and insights to optimize your lead conversion.
+                </p>
+            </div>
+
+            <!-- Feature 4 -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 hover-lift">
+                <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-6">
+                    <i class="fas fa-user-plus text-yellow-600 text-xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Agent Assignment</h3>
+                <p class="text-gray-600">
+                    Assign leads to team members and track their progress through the sales pipeline.
+                </p>
+            </div>
+
+            <!-- Feature 5 -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 hover-lift">
+                <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-6">
+                    <i class="fas fa-bell text-red-600 text-xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Real-time Notifications</h3>
+                <p class="text-gray-600">
+                    Stay updated with real-time notifications for new leads and important updates.
+                </p>
+            </div>
+
+            <!-- Feature 6 -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 hover-lift">
+                <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-6">
+                    <i class="fas fa-mobile-alt text-indigo-600 text-xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Mobile Responsive</h3>
+                <p class="text-gray-600">
+                    Access your leads from anywhere with our fully responsive mobile-friendly interface.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Section -->
+<div class="py-24 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
+            <div>
+                <div class="text-4xl font-bold text-blue-600 mb-2">1000+</div>
+                <div class="text-gray-600">Active Users</div>
+            </div>
+            <div>
+                <div class="text-4xl font-bold text-green-600 mb-2">50K+</div>
+                <div class="text-gray-600">Leads Managed</div>
+            </div>
+            <div>
+                <div class="text-4xl font-bold text-purple-600 mb-2">95%</div>
+                <div class="text-gray-600">Satisfaction Rate</div>
+            </div>
+            <div>
+                <div class="text-4xl font-bold text-yellow-600 mb-2">24/7</div>
+                <div class="text-gray-600">Support Available</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CTA Section -->
+<div class="py-24 bg-gradient-to-r from-blue-600 to-purple-600">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">
+            Ready to transform your lead management?
+        </h2>
+        <p class="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+            Join thousands of businesses that have already improved their lead conversion rates with our platform.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="{% url 'signup' %}" class="inline-flex items-center px-8 py-4 border border-transparent text-lg font-medium rounded-lg text-blue-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-all duration-200 transform hover:scale-105">
+                <i class="fas fa-rocket mr-2"></i>
+                Start Free Trial
+            </a>
+            <a href="{% url 'login' %}" class="inline-flex items-center px-8 py-4 border-2 border-white text-lg font-medium rounded-lg text-white hover:bg-white hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-all duration-200">
+                <i class="fas fa-play mr-2"></i>
+                Watch Demo
+            </a>
+        </div>
+    </div>
+</div>
 {% endblock content %}

@@ -152,10 +152,11 @@ cython_debug/
 #.idea/
 
 # Project-specific files
-logs/*.log
+logs/
 media/
 staticfiles/
 static_root/
+*.log
 
 # Database
 *.db
