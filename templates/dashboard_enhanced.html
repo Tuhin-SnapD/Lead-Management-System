@@ -1,0 +1,394 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<style>
+    .floating-action-btn {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        z-index: 1000;
+        transition: all 0.3s ease;
+    }
+    .floating-action-btn:hover {
+        transform: scale(1.1);
+    }
+    .quick-action-card {
+        transition: all 0.3s ease;
+    }
+    .quick-action-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    .metric-card {
+        transition: all 0.3s ease;
+    }
+    .metric-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="p-6">
+    <!-- Header Section with Quick Actions -->
+    <div class="mb-8">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-4 lg:space-y-0">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
+                <p class="text-gray-600">AI-powered insights and advanced analytics for your lead management system.</p>
+            </div>
+            <div class="flex flex-wrap gap-3">
+                <a href="{% url 'leads:lead-create' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200">
+                    <i class="fas fa-plus mr-2"></i>
+                    Add Lead
+                </a>
+                <a href="{% url 'leads:kanban-board' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
+                    <i class="fas fa-columns mr-2"></i>
+                    Kanban Board
+                </a>
+                <a href="{% url 'leads:source-heatmap' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
+                    <i class="fas fa-chart-pie mr-2"></i>
+                    Analytics
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Total Leads Card -->
+        <div class="metric-card bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-users text-blue-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Total Leads</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ total_lead_count }}</p>
+                </div>
+            </div>
+            <div class="mt-4">
+                <div class="flex items-center text-sm text-green-600">
+                    <i class="fas fa-arrow-up mr-1"></i>
+                    <span>{{ total_in_past30 }} new this month</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- High Score Leads Card -->
+        <div class="metric-card bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-star text-green-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">High Score Leads</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ high_score_leads }}</p>
+                </div>
+            </div>
+            <div class="mt-4">
+                <div class="flex items-center text-sm text-green-600">
+                    <i class="fas fa-brain mr-1"></i>
+                    <span>ML predicted</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assigned Leads Card -->
+        <div class="metric-card bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-user-tie text-purple-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Assigned Leads</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ assigned_leads }}</p>
+                </div>
+            </div>
+            <div class="mt-4">
+                <div class="flex items-center text-sm text-purple-600">
+                    <i class="fas fa-percentage mr-1"></i>
+                    <span>{{ assignment_rate }}% assignment rate</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Converted Leads Card -->
+        <div class="metric-card bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-trophy text-yellow-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Converted Leads</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ converted_leads }}</p>
+                </div>
+            </div>
+            <div class="mt-4">
+                <div class="flex items-center text-sm text-yellow-600">
+                    <i class="fas fa-chart-line mr-1"></i>
+                    <span>{{ conversion_rate }}% conversion rate</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <a href="{% url 'leads:lead-create' %}" class="quick-action-card bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-user-plus text-blue-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Add New Lead</h3>
+                    <p class="text-sm text-gray-600">Create a new lead record</p>
+                </div>
+            </div>
+        </a>
+
+        <a href="{% url 'leads:kanban-board' %}" class="quick-action-card bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-columns text-green-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Kanban Board</h3>
+                    <p class="text-sm text-gray-600">Visual lead management</p>
+                </div>
+            </div>
+        </a>
+
+        <a href="{% url 'leads:agent-performance' %}" class="quick-action-card bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-chart-line text-purple-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Performance</h3>
+                    <p class="text-sm text-gray-600">View agent metrics</p>
+                </div>
+            </div>
+        </a>
+
+        <a href="{% url 'leads:source-heatmap' %}" class="quick-action-card bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-chart-pie text-orange-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Analytics</h3>
+                    <p class="text-sm text-gray-600">Source performance</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Source Performance Chart -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Lead Source Performance</h3>
+            <div class="h-64">
+                <canvas id="sourceChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Conversion Rate Chart -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Conversion Rates by Source</h3>
+            <div class="h-64">
+                <canvas id="conversionChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- ML Model Training -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold text-gray-900">Machine Learning</h2>
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-brain text-blue-600"></i>
+                <span class="text-sm text-gray-600">AI-powered insights</span>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="p-4 bg-blue-50 rounded-lg">
+                <div class="flex items-center mb-2">
+                    <i class="fas fa-chart-line text-blue-600 mr-2"></i>
+                    <h4 class="font-medium text-gray-900">Lead Scoring</h4>
+                </div>
+                <p class="text-sm text-gray-600">AI-powered lead prioritization based on historical data</p>
+            </div>
+            
+            <div class="p-4 bg-green-50 rounded-lg">
+                <div class="flex items-center mb-2">
+                    <i class="fas fa-robot text-green-600 mr-2"></i>
+                    <h4 class="font-medium text-gray-900">Smart Predictions</h4>
+                </div>
+                <p class="text-sm text-gray-600">Predict conversion likelihood and optimal follow-up timing</p>
+            </div>
+            
+            <div class="p-4 bg-purple-50 rounded-lg">
+                <form method="post" action="{% url 'leads:train-ml-model' %}" class="space-y-3">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 transition-colors duration-200">
+                        <i class="fas fa-cog mr-2"></i>
+                        Train Model
+                    </button>
+                </form>
+                <p class="text-xs text-gray-500 mt-2">Requires 50+ leads for optimal training</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Interactions -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold text-gray-900">Recent Interactions</h2>
+            <a href="{% url 'leads:lead-list' %}" class="text-sm text-blue-600 hover:text-blue-700 transition-colors duration-200">
+                View All Leads <i class="fas fa-arrow-right ml-1"></i>
+            </a>
+        </div>
+        <div class="space-y-3">
+            {% for interaction in recent_interactions %}
+            <div class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                    <i class="fas fa-{% if interaction.interaction_type == 'call' %}phone{% elif interaction.interaction_type == 'email' %}envelope{% elif interaction.interaction_type == 'meeting' %}calendar{% else %}comment{% endif %} text-blue-600 text-sm"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-gray-900">
+                        {{ interaction.lead.full_name }} - {{ interaction.get_interaction_type_display }}
+                    </p>
+                    <p class="text-xs text-gray-600">
+                        by {{ interaction.agent.full_name }} • {{ interaction.created_at|timesince }} ago
+                    </p>
+                </div>
+                <div class="text-xs">
+                    <span class="px-2 py-1 rounded-full text-xs font-medium 
+                        {% if interaction.outcome == 'positive' %}bg-green-100 text-green-800
+                        {% elif interaction.outcome == 'negative' %}bg-red-100 text-red-800
+                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                        {{ interaction.get_outcome_display }}
+                    </span>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-8 text-gray-500">
+                <i class="fas fa-inbox text-4xl mb-2"></i>
+                <p>No recent interactions</p>
+                <p class="text-sm mt-2">Start by creating some leads and recording interactions</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Floating Action Button -->
+<div class="floating-action-btn">
+    <div class="relative group">
+        <button class="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200">
+            <i class="fas fa-plus text-xl"></i>
+        </button>
+        <!-- Dropdown Menu -->
+        <div class="absolute bottom-16 right-0 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+            <div class="py-2">
+                <a href="{% url 'leads:lead-create' %}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">
+                    <i class="fas fa-user-plus mr-3 text-blue-600"></i>
+                    Add New Lead
+                </a>
+                <a href="{% url 'leads:kanban-board' %}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">
+                    <i class="fas fa-columns mr-3 text-green-600"></i>
+                    Kanban Board
+                </a>
+                <a href="{% url 'leads:agent-performance' %}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">
+                    <i class="fas fa-chart-line mr-3 text-purple-600"></i>
+                    Performance
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Source Performance Chart
+const sourceCtx = document.getElementById('sourceChart').getContext('2d');
+const sourceChart = new Chart(sourceCtx, {
+    type: 'doughnut',
+    data: {
+        labels: [{% for source in top_sources %}'{{ source.source|default:"Unknown" }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+        datasets: [{
+            data: [{% for source in top_sources %}{{ source.total }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+            backgroundColor: [
+                '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'
+            ],
+            borderWidth: 2,
+            borderColor: '#ffffff'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Conversion Rate Chart
+const conversionCtx = document.getElementById('conversionChart').getContext('2d');
+const conversionChart = new Chart(conversionCtx, {
+    type: 'bar',
+    data: {
+        labels: [{% for source in top_sources %}'{{ source.source|default:"Unknown" }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+        datasets: [{
+            label: 'Conversion Rate (%)',
+            data: [{% for source in top_sources %}{{ source.conversion_rate }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+            backgroundColor: [
+                {% for source in top_sources %}
+                {% if source.conversion_rate > 20 %}'#10B981'
+                {% elif source.conversion_rate > 10 %}'#F59E0B'
+                {% else %}'#EF4444'
+                {% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}
+            ],
+            borderWidth: 1,
+            borderColor: '#ffffff'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100,
+                ticks: {
+                    callback: function(value) {
+                        return value + '%';
+                    }
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+</script>
+{% endblock content %} 

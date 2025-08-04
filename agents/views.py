@@ -67,16 +67,19 @@ class AgentCreateView(OrganisorAndLoginRequiredMixin, OrganisationContextMixin, 
     def form_valid(self, form) -> HttpResponse:
         """Handle valid form submission."""
         try:
-            # Use service to create agent
-            agent = AgentService.create_agent(
-                email=form.cleaned_data['email'],
-                first_name=form.cleaned_data['first_name'],
-                last_name=form.cleaned_data['last_name'],
-                organisation=self.get_organisation()
-            )
-            
-            # Set the form instance for the view
-            self.object = agent
+            # For create operations, use the service to create the agent
+            if not form.instance.pk:
+                agent = AgentService.create_agent(
+                    email=form.cleaned_data['email'],
+                    username=form.cleaned_data['username'],
+                    first_name=form.cleaned_data['first_name'],
+                    last_name=form.cleaned_data['last_name'],
+                    organisation=self.get_organisation()
+                )
+                self.object = agent
+            else:
+                # For update operations, save the form normally
+                self.object = form.save()
             
             return super().form_valid(form)
             
@@ -135,13 +138,14 @@ class AgentUpdateView(OrganisorAndLoginRequiredMixin, OrganisationContextMixin, 
     def form_valid(self, form) -> HttpResponse:
         """Handle valid form submission."""
         try:
-            response = super().form_valid(form)
+            # Save the form
+            self.object = form.save()
             
             # Send notification email if email changed
             if form.has_changed() and 'email' in form.changed_data:
-                self.send_email_update_notification(form.instance)
+                self.send_email_update_notification(self.object)
             
-            return response
+            return super().form_valid(form)
             
         except Exception as e:
             logger.error(f"Error updating agent: {str(e)}")

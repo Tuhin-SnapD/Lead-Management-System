@@ -1,0 +1,35 @@
+Follow-up Reminder
+==================
+
+Hello {{ agent.user.first_name }},
+
+This is a reminder for your scheduled follow-up with {{ lead.full_name }}.
+
+{% if is_overdue %}
+⚠️ OVERDUE - This follow-up is past due!
+{% endif %}
+
+Lead Details:
+-------------
+Name: {{ lead.full_name }}
+Email: {{ lead.email }}
+Phone: {{ lead.phone_number }}
+Scheduled Date: {{ follow_up_date|date:"F j, Y g:i A" }}
+{% if follow_up_notes %}
+Notes: {{ follow_up_notes }}
+{% endif %}
+
+Please make sure to:
+- Contact the lead as scheduled
+- Update the lead status after the interaction
+- Log any important notes or outcomes
+
+Quick Links:
+- View Lead Details: {{ request.scheme }}://{{ request.get_host }}{% url 'leads:lead-detail' lead.id %}
+- Log Interaction: {{ request.scheme }}://{{ request.get_host }}{% url 'leads:lead-interaction-create' lead.id %}
+
+If you need to reschedule this follow-up, please update the lead record in the system.
+
+---
+This is an automated reminder from your Lead Management System.
+If you have any questions, please contact your administrator. 

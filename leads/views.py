@@ -25,7 +25,7 @@ from agents.mixins import (
     AgentAndLoginRequiredMixin,
     OrganisationContextMixin
 )
-from .models import Lead, Agent, Category
+from .models import Lead, Agent, Category, LeadInteraction, AgentPerformance, MLTrainingSession
 from .forms import (
     LeadForm, 
     LeadModelForm, 
@@ -33,7 +33,12 @@ from .forms import (
     CustomLoginForm,
     AssignAgentForm, 
     LeadCategoryUpdateForm,
-    LeadFilterForm
+    LeadFilterForm,
+    LeadInteractionForm,
+    FollowUpForm,
+    SnoozeForm,
+    LeadScoringForm,
+    AgentPerformanceFilterForm
 )
 from .services import LeadService, AgentService, CategoryService
 
@@ -242,6 +247,11 @@ class LeadCreateView(OrganisorAndLoginRequiredMixin, generic.CreateView):
         kwargs['organisation'] = self.request.user.userprofile
         return kwargs
 
+    def form_valid(self, form) -> HttpResponse:
+        """Handle valid form submission."""
+        form.instance.organisation = self.request.user.userprofile
+        return super().form_valid(form)
+
     def get_success_url(self) -> str:
         """Return the success URL."""
         messages.success(self.request, _("Lead created successfully!"))
@@ -417,3 +427,549 @@ class LeadCategoryUpdateView(LoginRequiredMixin, generic.UpdateView):
 def handle_not_found(request, exception=None):
     """Custom 404 handler."""
     return render(request, '404error.html', status=404)
+
+
+class LeadInteractionCreateView(LoginRequiredMixin, generic.CreateView):
+    """View for creating lead interactions."""
+    template_name = "leads/lead_interaction_create.html"
+    form_class = LeadInteractionForm
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        """Get context data including lead information."""
+        context = super().get_context_data(**kwargs)
+        lead = get_object_or_404(
+            Lead, 
+            id=self.kwargs["lead_id"],
+            organisation=self.request.user.userprofile
+        )
+        context['lead'] = lead
+        return context
+
+    def form_valid(self, form) -> HttpResponse:
+        """Handle valid form submission."""
+        lead = get_object_or_404(
+            Lead, 
+            id=self.kwargs["lead_id"],
+            organisation=self.request.user.userprofile
+        )
+        
+        interaction = form.save(commit=False)
+        interaction.lead = lead
+        interaction.agent = self.request.user.agent
+        interaction.save()
+        
+        # Update lead interaction count and type
+        lead.record_interaction(interaction.interaction_type)
+        
+        messages.success(self.request, _("Interaction recorded successfully!"))
+        return super().form_valid(form)
+
+    def get_success_url(self) -> str:
+        """Return the success URL."""
+        return reverse("leads:lead-detail", kwargs={"pk": self.kwargs["lead_id"]})
+
+
+class FollowUpScheduleView(LoginRequiredMixin, generic.FormView):
+    """View for scheduling follow-ups."""
+    template_name = "leads/follow_up_schedule.html"
+    form_class = FollowUpForm
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        """Get context data including lead information."""
+        context = super().get_context_data(**kwargs)
+        lead = get_object_or_404(
+            Lead, 
+            id=self.kwargs["lead_id"],
+            organisation=self.request.user.userprofile
+        )
+        context['lead'] = lead
+        return context
+
+    def form_valid(self, form) -> HttpResponse:
+        """Handle valid form submission."""
+        lead = get_object_or_404(
+            Lead, 
+            id=self.kwargs["lead_id"],
+            organisation=self.request.user.userprofile
+        )
+        
+        follow_up_date = form.cleaned_data['follow_up_date']
+        follow_up_notes = form.cleaned_data['follow_up_notes']
+        send_calendar_invite = form.cleaned_data['send_calendar_invite']
+        
+        # Schedule follow-up
+        lead.schedule_follow_up(follow_up_date, follow_up_notes)
+        
+        # Send calendar invite if requested
+        if send_calendar_invite:
+            from .tasks import send_calendar_invite_task
+            send_calendar_invite_task.delay(
+                lead_id=lead.id,
+                agent_id=self.request.user.agent.id,
+                meeting_date=follow_up_date.isoformat(),
+                duration_minutes=60
+            )
+        
+        messages.success(self.request, _("Follow-up scheduled successfully!"))
+        return super().form_valid(form)
+
+    def get_success_url(self) -> str:
+        """Return the success URL."""
+        return reverse("leads:lead-detail", kwargs={"pk": self.kwargs["lead_id"]})
+
+
+class LeadSnoozeView(LoginRequiredMixin, generic.FormView):
+    """View for snoozing leads."""
+    template_name = "leads/lead_snooze.html"
+    form_class = SnoozeForm
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        """Get context data including lead information."""
+        context = super().get_context_data(**kwargs)
+        lead = get_object_or_404(
+            Lead, 
+            id=self.kwargs["lead_id"],
+            organisation=self.request.user.userprofile
+        )
+        context['lead'] = lead
+        return context
+
+    def form_valid(self, form) -> HttpResponse:
+        """Handle valid form submission."""
+        lead = get_object_or_404(
+            Lead, 
+            id=self.kwargs["lead_id"],
+            organisation=self.request.user.userprofile
+        )
+        
+        snooze_until = form.cleaned_data['snooze_until']
+        lead.snooze_lead(snooze_until)
+        
+        messages.success(self.request, _("Lead snoozed successfully!"))
+        return super().form_valid(form)
+
+    def get_success_url(self) -> str:
+        """Return the success URL."""
+        return reverse("leads:lead-detail", kwargs={"pk": self.kwargs["lead_id"]})
+
+
+class LeadUnSnoozeView(LoginRequiredMixin, generic.View):
+    """View for unsnoozing leads."""
+    
+    def post(self, request, *args, **kwargs):
+        """Handle POST request to unsnooze lead."""
+        lead = get_object_or_404(
+            Lead, 
+            id=self.kwargs["lead_id"],
+            organisation=self.request.user.userprofile
+        )
+        
+        lead.unsnooze_lead()
+        messages.success(self.request, _("Lead unsnoozed successfully!"))
+        
+        return redirect("leads:lead-detail", pk=lead.id)
+
+
+class LeadScoringView(LoginRequiredMixin, generic.FormView):
+    """View for manual lead scoring."""
+    template_name = "leads/lead_scoring.html"
+    form_class = LeadScoringForm
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        """Get context data including lead information."""
+        context = super().get_context_data(**kwargs)
+        lead = get_object_or_404(
+            Lead, 
+            id=self.kwargs["lead_id"],
+            organisation=self.request.user.userprofile
+        )
+        context['lead'] = lead
+        
+        # Get ML predicted score
+        from .ml_service import lead_scoring_service
+        context['ml_score'] = lead_scoring_service.predict_lead_score(lead)
+        
+        return context
+
+    def form_valid(self, form) -> HttpResponse:
+        """Handle valid form submission."""
+        lead = get_object_or_404(
+            Lead, 
+            id=self.kwargs["lead_id"],
+            organisation=self.request.user.userprofile
+        )
+        
+        lead_score = form.cleaned_data['lead_score']
+        engagement_level = form.cleaned_data['engagement_level']
+        
+        lead.update_lead_score(lead_score)
+        lead.engagement_level = engagement_level
+        lead.save(update_fields=['engagement_level', 'updated_at'])
+        
+        messages.success(self.request, _("Lead score updated successfully!"))
+        return super().form_valid(form)
+
+    def get_success_url(self) -> str:
+        """Return the success URL."""
+        return reverse("leads:lead-detail", kwargs={"pk": self.kwargs["lead_id"]})
+
+
+class KanbanBoardView(LoginRequiredMixin, generic.TemplateView):
+    """Kanban board view for drag-and-drop lead management."""
+    template_name = "leads/kanban_board.html"
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        """Get context data for the Kanban board."""
+        context = super().get_context_data(**kwargs)
+        
+        if self.request.user.is_organisor:
+            organisation = self.request.user.userprofile
+        else:
+            organisation = self.request.user.agent.organisation
+        
+        # Get categories for columns
+        categories = Category.objects.filter(organisation=organisation).order_by('name')
+        
+        # Get leads for each category
+        kanban_data = {}
+        for category in categories:
+            if self.request.user.is_organisor:
+                leads = Lead.objects.filter(
+                    organisation=organisation,
+                    category=category
+                ).select_related('agent', 'category').order_by('-lead_score', '-date_added')
+            else:
+                leads = Lead.objects.filter(
+                    agent=self.request.user.agent,
+                    category=category
+                ).select_related('agent', 'category').order_by('-lead_score', '-date_added')
+            
+            kanban_data[category.name] = leads
+        
+        # Get unassigned leads
+        if self.request.user.is_organisor:
+            unassigned_leads = Lead.objects.filter(
+                organisation=organisation,
+                category__isnull=True
+            ).select_related('agent', 'category').order_by('-lead_score', '-date_added')
+        else:
+            unassigned_leads = Lead.objects.filter(
+                agent=self.request.user.agent,
+                category__isnull=True
+            ).select_related('agent', 'category').order_by('-lead_score', '-date_added')
+        
+        kanban_data['Unassigned'] = unassigned_leads
+        
+        context.update({
+            'kanban_data': kanban_data,
+            'categories': categories,
+        })
+        
+        return context
+
+
+class AgentPerformanceView(LoginRequiredMixin, generic.TemplateView):
+    """View for agent performance metrics."""
+    template_name = "leads/agent_performance.html"
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        """Get context data for agent performance."""
+        context = super().get_context_data(**kwargs)
+        
+        if self.request.user.is_organisor:
+            organisation = self.request.user.userprofile
+        else:
+            organisation = self.request.user.agent.organisation
+        
+        # Get filter form
+        filter_form = AgentPerformanceFilterForm(
+            self.request.GET, 
+            organisation=organisation
+        )
+        
+        # Get performance data
+        performance_data = AgentPerformance.objects.filter(
+            agent__organisation=organisation
+        ).select_related('agent__user')
+        
+        # Apply filters
+        if filter_form.is_valid():
+            agent = filter_form.cleaned_data.get('agent')
+            date_from = filter_form.cleaned_data.get('date_from')
+            date_to = filter_form.cleaned_data.get('date_to')
+            metric = filter_form.cleaned_data.get('metric')
+            
+            if agent:
+                performance_data = performance_data.filter(agent=agent)
+            
+            if date_from:
+                performance_data = performance_data.filter(date__gte=date_from)
+            
+            if date_to:
+                performance_data = performance_data.filter(date__lte=date_to)
+            
+            if metric:
+                performance_data = performance_data.order_by(f'-{metric}')
+        
+        # Get top performers
+        top_performers = performance_data.order_by('-conversion_rate')[:5]
+        
+        # Get performance trends
+        from django.db.models import Avg
+        from datetime import timedelta
+        
+        thirty_days_ago = timezone.now().date() - timedelta(days=30)
+        recent_performance = performance_data.filter(
+            date__gte=thirty_days_ago
+        ).aggregate(
+            avg_conversion_rate=Avg('conversion_rate'),
+            avg_contact_rate=Avg('contact_rate'),
+            total_leads_assigned=Avg('leads_assigned'),
+            total_leads_converted=Avg('leads_converted'),
+        )
+        
+        context.update({
+            'filter_form': filter_form,
+            'performance_data': performance_data,
+            'top_performers': top_performers,
+            'recent_performance': recent_performance,
+        })
+        
+        return context
+
+
+class SourceHeatmapView(LoginRequiredMixin, generic.TemplateView):
+    """View for lead source heatmap visualization."""
+    template_name = "leads/source_heatmap.html"
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        """Get context data for source heatmap."""
+        context = super().get_context_data(**kwargs)
+        
+        if self.request.user.is_organisor:
+            organisation = self.request.user.userprofile
+        else:
+            organisation = self.request.user.agent.organisation
+        
+        # Get lead sources and their performance
+        from django.db.models import Count, Q
+        
+        sources_data = Lead.objects.filter(
+            organisation=organisation
+        ).values('source').annotate(
+            total_leads=Count('id'),
+            converted_leads=Count('id', filter=Q(category__name__icontains='converted')),
+            conversion_rate=Count('id', filter=Q(category__name__icontains='converted')) * 100.0 / Count('id')
+        ).order_by('-total_leads')
+        
+        # Prepare data for Chart.js
+        labels = []
+        total_leads_data = []
+        conversion_rates_data = []
+        colors = []
+        
+        for source in sources_data:
+            if source['source']:  # Skip empty sources
+                labels.append(source['source'])
+                total_leads_data.append(source['total_leads'])
+                conversion_rates_data.append(round(source['conversion_rate'], 2))
+                
+                # Color based on conversion rate
+                if source['conversion_rate'] > 20:
+                    colors.append('#10B981')  # Green
+                elif source['conversion_rate'] > 10:
+                    colors.append('#F59E0B')  # Yellow
+                else:
+                    colors.append('#EF4444')  # Red
+        
+        context.update({
+            'sources_data': sources_data,
+            'chart_labels': labels,
+            'total_leads_data': total_leads_data,
+            'conversion_rates_data': conversion_rates_data,
+            'colors': colors,
+        })
+        
+        return context
+
+
+class MLModelTrainingView(OrganisorAndLoginRequiredMixin, generic.View):
+    """View for training ML models."""
+    
+    def get(self, request, *args, **kwargs):
+        """Handle GET request to show ML training form."""
+        from .ml_service import lead_scoring_service
+        import os
+        from django.conf import settings
+        
+        # Get organization context
+        if request.user.is_organisor:
+            organisation = request.user.userprofile
+        else:
+            organisation = request.user.agent.organisation
+        
+        # Get lead statistics
+        total_leads = Lead.objects.filter(organisation=organisation).count()
+        
+        # Check if model files exist
+        model_path = os.path.join(settings.ML_MODEL_PATH, 'lead_scoring_model.pkl')
+        model_exists = os.path.exists(model_path)
+        
+        # Get last training info from database
+        last_training_session = MLTrainingSession.objects.filter(
+            organisation=organisation,
+            status='success'
+        ).first()
+        
+        if last_training_session:
+            last_training = last_training_session.training_date.strftime('%Y-%m-%d %H:%M')
+            accuracy = f"{last_training_session.accuracy:.1%}"
+        else:
+            last_training = "Never"
+            accuracy = "N/A"
+        
+        # Get recent training sessions
+        recent_sessions = MLTrainingSession.objects.filter(
+            organisation=organisation
+        )[:5]
+        
+        context = {
+            'title': 'Train ML Model',
+            'total_leads': total_leads,
+            'model_exists': model_exists,
+            'last_training': last_training,
+            'accuracy': accuracy,
+            'organisation': organisation,
+            'recent_sessions': recent_sessions,
+        }
+        
+        return render(request, 'leads/train_ml_model.html', context)
+    
+    def post(self, request, *args, **kwargs):
+        """Handle POST request to train ML model."""
+        try:
+            # Run training synchronously instead of using Celery
+            from .ml_service import lead_scoring_service
+            
+            organisation_id = request.user.userprofile.id
+            results = lead_scoring_service.train_model(organisation_id)
+            
+            if 'error' in results:
+                messages.error(
+                    self.request, 
+                    f"ML model training failed: {results['error']}"
+                )
+            else:
+                messages.success(
+                    self.request, 
+                    f"ML model training completed successfully! Accuracy: {results.get('accuracy', 0):.2%}"
+                )
+            
+        except Exception as e:
+            messages.error(
+                self.request, 
+                f"ML model training failed: {str(e)}"
+            )
+        
+        # Redirect back to the train ML model page instead of dashboard
+        return redirect("leads:train-ml-model")
+
+
+class DashboardEnhancedView(LoginRequiredMixin, generic.TemplateView):
+    """Enhanced dashboard with ML insights and performance metrics."""
+    template_name = "dashboard_enhanced.html"
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        """Get context data for enhanced dashboard."""
+        context = super().get_context_data(**kwargs)
+        
+        if self.request.user.is_organisor:
+            organisation = self.request.user.userprofile
+        else:
+            organisation = self.request.user.agent.organisation
+        
+        # Basic metrics
+        total_leads = Lead.objects.filter(organisation=organisation).count()
+        total_in_past30 = Lead.objects.filter(
+            organisation=organisation,
+            date_added__gte=timezone.now() - timezone.timedelta(days=30)
+        ).count()
+        converted_in_past30 = Lead.objects.filter(
+            organisation=organisation,
+            category__name__icontains='converted',
+            date_added__gte=timezone.now() - timezone.timedelta(days=30)
+        ).count()
+        
+        # ML insights
+        high_score_leads = Lead.objects.filter(
+            organisation=organisation,
+            lead_score__gte=80
+        ).count()
+        
+        # Assigned leads metrics
+        assigned_leads = Lead.objects.filter(
+            organisation=organisation,
+            agent__isnull=False
+        ).count()
+        
+        assignment_rate = 0
+        if total_leads > 0:
+            assignment_rate = round((assigned_leads / total_leads) * 100, 1)
+        
+        # Converted leads metrics
+        converted_leads = Lead.objects.filter(
+            organisation=organisation,
+            category__name__icontains='converted'
+        ).count()
+        
+        conversion_rate = 0
+        if total_leads > 0:
+            conversion_rate = round((converted_leads / total_leads) * 100, 1)
+        
+        # Top performing sources
+        from django.db.models import Count, Q
+        top_sources_raw = Lead.objects.filter(
+            organisation=organisation
+        ).values('source').annotate(
+            total=Count('id'),
+            converted=Count('id', filter=Q(category__name__icontains='converted'))
+        ).order_by('-total')[:5]
+        
+        # Calculate conversion rates
+        top_sources = []
+        for source in top_sources_raw:
+            conversion_rate = 0
+            if source['total'] > 0:
+                conversion_rate = (source['converted'] / source['total']) * 100
+            
+            top_sources.append({
+                'source': source['source'] or 'Unknown',
+                'total': source['total'],
+                'converted': source['converted'],
+                'conversion_rate': round(conversion_rate, 1)
+            })
+        
+        # Recent interactions
+        recent_interactions = LeadInteraction.objects.filter(
+            lead__organisation=organisation
+        ).select_related('lead', 'agent__user').order_by('-created_at')[:10]
+        
+        context.update({
+            'total_lead_count': total_leads,
+            'total_in_past30': total_in_past30,
+            'converted_in_past30': converted_in_past30,
+            'high_score_leads': high_score_leads,
+            'assigned_leads': assigned_leads,
+            'assignment_rate': assignment_rate,
+            'converted_leads': converted_leads,
+            'conversion_rate': conversion_rate,
+            'top_sources': top_sources,
+            'recent_interactions': recent_interactions,
+        })
+        
+        return context
+
+
+class FeaturesOverviewView(LoginRequiredMixin, generic.TemplateView):
+    """Features overview page showing all available features."""
+    template_name = "features_overview.html"

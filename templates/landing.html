@@ -1,7 +1,18 @@
-{% extends 'base.html' %}
+{% extends 'base_simple.html' %}
 {% load static %}
 
 {% block content %}
+{% if user.is_authenticated %}
+<script>
+    window.location.href = "{% url 'dashboard' %}";
+</script>
+<div class="flex items-center justify-center min-h-screen">
+    <div class="text-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p class="text-gray-600">Redirecting to dashboard...</p>
+    </div>
+</div>
+{% else %}
 <!-- Hero Section -->
 <div class="relative bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 overflow-hidden">
     <div class="absolute inset-0 bg-black opacity-10"></div>
@@ -164,4 +175,5 @@
         </div>
     </div>
 </div>
+{% endif %}
 {% endblock content %}

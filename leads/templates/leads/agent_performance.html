@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Agent Performance - LeadFlow{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-10">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                <div class="flex items-center space-x-4">
+                    <a href="{% url 'dashboard' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                        <i class="fas fa-tachometer-alt mr-2"></i>
+                        Dashboard
+                    </a>
+                    <div class="h-6 w-px bg-gray-300"></div>
+                    <a href="{% url 'leads:lead-list' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                        <i class="fas fa-users mr-2"></i>
+                        Leads
+                    </a>
+                </div>
+                <div class="text-center lg:text-right">
+                    <h1 class="text-3xl font-bold text-gray-900">Agent Performance</h1>
+                    <p class="text-lg text-gray-600 mt-2">Track and analyze your team's performance</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Overview Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Total Agents -->
+            <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-shadow duration-300">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-users text-blue-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Total Agents</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ total_agents }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Average Conversion Rate -->
+            <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-shadow duration-300">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-chart-line text-green-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Avg. Conversion</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ avg_conversion_rate|floatformat:1 }}%</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Leads Assigned -->
+            <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-shadow duration-300">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-handshake text-purple-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Leads Assigned</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ total_leads_assigned }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Performer -->
+            <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-shadow duration-300">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="h-12 w-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-trophy text-yellow-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Top Performer</p>
+                        <p class="text-lg font-bold text-gray-900">{{ top_performer|default:"N/A" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+            <!-- Performance Table -->
+            <div class="xl:col-span-2">
+                <div class="bg-white rounded-xl shadow-lg border border-gray-200">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-xl font-bold text-gray-900">Agent Performance Details</h2>
+                        <p class="text-sm text-gray-600 mt-1">Detailed performance metrics for each agent</p>
+                    </div>
+
+                    <div class="overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                            <i class="fas fa-user mr-2"></i>Agent
+                                        </th>
+                                        <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                            <i class="fas fa-handshake mr-2"></i>Leads Assigned
+                                        </th>
+                                        <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                            <i class="fas fa-phone mr-2"></i>Leads Contacted
+                                        </th>
+                                        <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                            <i class="fas fa-check mr-2"></i>Leads Converted
+                                        </th>
+                                        <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                            <i class="fas fa-percentage mr-2"></i>Conversion Rate
+                                        </th>
+                                        <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                            <i class="fas fa-clock mr-2"></i>Avg Response Time
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    {% for agent_data in agent_performance %}
+                                    <tr class="hover:bg-gray-50 transition-colors duration-200">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="h-10 w-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                                                    {{ agent_data.agent.user.first_name|first }}{{ agent_data.agent.user.last_name|first }}
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-semibold text-gray-900">
+                                                        {{ agent_data.agent.user.first_name }} {{ agent_data.agent.user.last_name }}
+                                                    </div>
+                                                    <div class="text-sm text-gray-500">
+                                                        {{ agent_data.agent.user.email }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-semibold text-gray-900">{{ agent_data.leads_assigned }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-semibold text-gray-900">{{ agent_data.leads_contacted }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-semibold text-gray-900">{{ agent_data.leads_converted }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="w-16 bg-gray-200 rounded-full h-2 mr-3">
+                                                    <div class="bg-gradient-to-r from-green-400 to-blue-500 h-2 rounded-full" style="width: {{ agent_data.conversion_rate }}%"></div>
+                                                </div>
+                                                <span class="text-sm font-semibold text-gray-900">{{ agent_data.conversion_rate|floatformat:1 }}%</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900">{{ agent_data.avg_response_time|default:"N/A" }}</div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="6" class="px-6 py-12 text-center">
+                                            <div class="flex flex-col items-center">
+                                                <div class="h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                                    <i class="fas fa-chart-bar text-gray-400 text-2xl"></i>
+                                                </div>
+                                                <h3 class="text-lg font-medium text-gray-900 mb-2">No performance data</h3>
+                                                <p class="text-gray-500">Performance data will appear here once agents start working with leads.</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="xl:col-span-1">
+                <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 sticky top-8">
+                    <div class="mb-8">
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">Performance Insights</h3>
+                        <p class="text-gray-600">
+                            Key metrics and insights about your team's performance:
+                        </p>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Best Performer -->
+                        <div class="p-4 bg-green-50 rounded-lg border border-green-200">
+                            <div class="flex items-center">
+                                <div class="h-8 w-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                                    <i class="fas fa-trophy text-green-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-semibold text-green-800">Best Performer</h4>
+                                    <p class="text-sm text-green-700">{{ best_performer|default:"No data yet" }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Most Active -->
+                        <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <div class="flex items-center">
+                                <div class="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                    <i class="fas fa-fire text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-semibold text-blue-800">Most Active</h4>
+                                    <p class="text-sm text-blue-700">{{ most_active|default:"No data yet" }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Needs Improvement -->
+                        <div class="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                            <div class="flex items-center">
+                                <div class="h-8 w-8 bg-yellow-100 rounded-lg flex items-center justify-center mr-3">
+                                    <i class="fas fa-exclamation-triangle text-yellow-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-semibold text-yellow-800">Needs Improvement</h4>
+                                    <p class="text-sm text-yellow-700">{{ needs_improvement|default:"No data yet" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 pt-6 border-t border-gray-200">
+                        <h4 class="text-sm font-semibold text-gray-900 mb-4">Quick Actions</h4>
+                        <div class="space-y-3">
+                            <a href="{% url 'agents:agent-list' %}" class="block text-sm text-blue-600 hover:text-blue-800 transition-colors duration-200">
+                                <i class="fas fa-users mr-2"></i>
+                                View All Agents
+                            </a>
+                            <a href="{% url 'leads:lead-list' %}" class="block text-sm text-green-600 hover:text-green-800 transition-colors duration-200">
+                                <i class="fas fa-user-plus mr-2"></i>
+                                Manage Leads
+                            </a>
+                            <a href="{% url 'dashboard' %}" class="block text-sm text-purple-600 hover:text-purple-800 transition-colors duration-200">
+                                <i class="fas fa-tachometer-alt mr-2"></i>
+                                Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Animation for the cards */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.bg-white {
+    animation: slideInUp 0.6s ease-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1280px) {
+    .sticky {
+        position: static;
+    }
+}
+
+@media (max-width: 768px) {
+    .p-6 {
+        padding: 1rem;
+    }
+    
+    .space-y-6 > * + * {
+        margin-top: 1.5rem;
+    }
+}
+</style>
+{% endblock %} 

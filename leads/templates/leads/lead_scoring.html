@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Lead Scoring - {{ lead.full_name }} - LeadFlow{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                <div class="flex items-center space-x-4">
+                    <a href="{% url 'leads:lead-detail' lead.pk %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Back to Lead
+                    </a>
+                    <div class="h-6 w-px bg-gray-300"></div>
+                    <a href="{% url 'leads:lead-list' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                        <i class="fas fa-users mr-2"></i>
+                        All Leads
+                    </a>
+                </div>
+                <div class="text-center lg:text-right">
+                    <h1 class="text-3xl font-bold text-gray-900">Lead Scoring</h1>
+                    <p class="text-lg text-gray-600 mt-2">Update scoring for {{ lead.full_name }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lead Info Card -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 mb-8">
+            <div class="flex items-center space-x-4">
+                <div class="h-16 w-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                    {{ lead.first_name|first }}{{ lead.last_name|first }}
+                </div>
+                <div class="flex-1">
+                    <h2 class="text-2xl font-bold text-gray-900">{{ lead.full_name }}</h2>
+                    <p class="text-gray-600">{{ lead.email }}</p>
+                    <p class="text-gray-600">{{ lead.phone_number }}</p>
+                </div>
+                <div class="text-right">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                        {{ lead.category.name|default:"Uncategorized" }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Score Display -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900">Current Lead Score</h3>
+                    <p class="text-gray-600">Based on interactions and engagement</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-3xl font-bold text-blue-600">{{ lead.lead_score|floatformat:1 }}</div>
+                    <div class="text-sm text-gray-500">out of 100</div>
+                </div>
+            </div>
+            
+            <!-- Score Bar -->
+            <div class="mt-4">
+                <div class="flex items-center justify-between text-sm text-gray-600 mb-2">
+                    <span>Low Priority</span>
+                    <span>High Priority</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-3">
+                    <div class="bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 h-3 rounded-full" style="width: {{ lead.lead_score }}%"></div>
+                </div>
+                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>0</span>
+                    <span>25</span>
+                    <span>50</span>
+                    <span>75</span>
+                    <span>100</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center space-x-4">
+                    <div class="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-chart-line text-green-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900">Manual Score Adjustment</h3>
+                        <p class="text-gray-600">Override the automatic lead score</p>
+                    </div>
+                </div>
+            </div>
+
+            <form method="post" class="p-8">
+                {% csrf_token %}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Lead Score -->
+                    <div>
+                        <label for="{{ form.lead_score.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-star mr-2"></i>Lead Score (0-100)
+                        </label>
+                        {{ form.lead_score }}
+                        {% if form.lead_score.errors %}
+                        <div class="mt-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
+                            <i class="fas fa-exclamation-circle mr-2"></i>
+                            {{ form.lead_score.errors.0 }}
+                        </div>
+                        {% endif %}
+                        {% if form.lead_score.help_text %}
+                        <p class="mt-2 text-sm text-gray-500">{{ form.lead_score.help_text }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Engagement Level -->
+                    <div>
+                        <label for="{{ form.engagement_level.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-signal mr-2"></i>Engagement Level
+                        </label>
+                        {{ form.engagement_level }}
+                        {% if form.engagement_level.errors %}
+                        <div class="mt-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
+                            <i class="fas fa-exclamation-circle mr-2"></i>
+                            {{ form.engagement_level.errors.0 }}
+                        </div>
+                        {% endif %}
+                        {% if form.engagement_level.help_text %}
+                        <p class="mt-2 text-sm text-gray-500">{{ form.engagement_level.help_text }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Quick Score Options -->
+                <div class="mt-8 p-6 bg-green-50 rounded-xl border border-green-200">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">Quick Score Options</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <button type="button" class="quick-score px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200" data-score="25">
+                            <i class="fas fa-thermometer-quarter mr-2 text-red-500"></i>Low (25)
+                        </button>
+                        <button type="button" class="quick-score px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200" data-score="50">
+                            <i class="fas fa-thermometer-half mr-2 text-yellow-500"></i>Medium (50)
+                        </button>
+                        <button type="button" class="quick-score px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200" data-score="75">
+                            <i class="fas fa-thermometer-three-quarters mr-2 text-orange-500"></i>High (75)
+                        </button>
+                        <button type="button" class="quick-score px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200" data-score="100">
+                            <i class="fas fa-thermometer-full mr-2 text-green-500"></i>Hot (100)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Scoring Guidelines -->
+                <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-info-circle text-blue-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h4 class="text-sm font-medium text-blue-800">Scoring Guidelines</h4>
+                            <div class="text-sm text-blue-700 mt-1 space-y-1">
+                                <div><strong>0-25:</strong> Cold lead, no recent activity</div>
+                                <div><strong>26-50:</strong> Warm lead, some engagement</div>
+                                <div><strong>51-75:</strong> Hot lead, active engagement</div>
+                                <div><strong>76-100:</strong> Very hot lead, ready to convert</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200 mt-8">
+                    <button type="submit" class="flex-1 inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 transform hover:scale-105">
+                        <i class="fas fa-save mr-2"></i>
+                        Update Score
+                    </button>
+                    <a href="{% url 'leads:lead-detail' lead.pk %}" class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-base font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                        <i class="fas fa-times mr-2"></i>
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Custom form field styling */
+input[type="number"], select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-size: 16px;
+    line-height: 1.75;
+    transition: all 0.2s;
+}
+
+input[type="number"]:focus, select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Animation for the cards */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.bg-white {
+    animation: slideInUp 0.6s ease-out;
+}
+</style>
+
+<script>
+// Quick score functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const quickScoreButtons = document.querySelectorAll('.quick-score');
+    const scoreInput = document.getElementById('{{ form.lead_score.id_for_label }}');
+    
+    quickScoreButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const score = parseInt(this.dataset.score);
+            scoreInput.value = score;
+        });
+    });
+});
+</script>
+{% endblock %} 

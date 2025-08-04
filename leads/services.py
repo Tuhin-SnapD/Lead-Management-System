@@ -275,6 +275,7 @@ class AgentService:
     @staticmethod
     def create_agent(
         email: str,
+        username: str,
         first_name: str,
         last_name: str,
         organisation: UserProfile
@@ -284,6 +285,7 @@ class AgentService:
         
         Args:
             email: Agent's email address
+            username: Agent's username
             first_name: Agent's first name
             last_name: Agent's last name
             organisation: Organization profile
@@ -295,7 +297,7 @@ class AgentService:
             with transaction.atomic():
                 # Create user account
                 user = User.objects.create_user(
-                    username=email,
+                    username=username,
                     email=email,
                     first_name=first_name,
                     last_name=last_name,

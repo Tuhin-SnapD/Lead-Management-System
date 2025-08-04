@@ -45,7 +45,14 @@ DJANGO_APPS = [
 THIRD_PARTY_APPS = [
     'crispy_forms',
     "crispy_tailwind",
+    'rest_framework',
+    'corsheaders',
+    'simple_history',
 ]
+
+# Only include django_celery_beat if Celery is enabled
+if os.getenv('CELERY_ENABLED', 'False').lower() == 'true':
+    THIRD_PARTY_APPS.append('django_celery_beat')
 
 LOCAL_APPS = [
     'leads.apps.LeadsConfig',
@@ -57,12 +64,14 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'simple_history.middleware.HistoryRequestMiddleware',
 ]
 
 ROOT_URLCONF = 'server.urls'
@@ -237,3 +246,46 @@ SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
 
 # Performance optimizations
 CONN_MAX_AGE = 60  # Database connection pooling
+
+# REST Framework settings
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+}
+
+# CORS settings
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
+
+# Celery Configuration
+# Only enable Celery if Redis is available
+CELERY_ENABLED = os.getenv('CELERY_ENABLED', 'False').lower() == 'true'
+
+if CELERY_ENABLED:
+    CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+    CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
+    CELERY_ACCEPT_CONTENT = ['json']
+    CELERY_TASK_SERIALIZER = 'json'
+    CELERY_RESULT_SERIALIZER = 'json'
+    CELERY_TIMEZONE = TIME_ZONE
+    CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+else:
+    # Disable Celery when Redis is not available
+    CELERY_BROKER_URL = None
+    CELERY_RESULT_BACKEND = None
+    CELERY_ACCEPT_CONTENT = ['json']
+    CELERY_TASK_SERIALIZER = 'json'
+    CELERY_RESULT_SERIALIZER = 'json'
+    CELERY_TIMEZONE = TIME_ZONE
+
+# Machine Learning Model Settings
+ML_MODEL_PATH = os.path.join(BASE_DIR, 'ml_models')
+os.makedirs(ML_MODEL_PATH, exist_ok=True)

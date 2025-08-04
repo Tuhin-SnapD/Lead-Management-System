@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Schedule Follow-up - {{ lead.full_name }} - LeadFlow{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                <div class="flex items-center space-x-4">
+                    <a href="{% url 'leads:lead-detail' lead.pk %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Back to Lead
+                    </a>
+                    <div class="h-6 w-px bg-gray-300"></div>
+                    <a href="{% url 'leads:lead-list' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                        <i class="fas fa-users mr-2"></i>
+                        All Leads
+                    </a>
+                </div>
+                <div class="text-center lg:text-right">
+                    <h1 class="text-3xl font-bold text-gray-900">Schedule Follow-up</h1>
+                    <p class="text-lg text-gray-600 mt-2">Set a reminder for {{ lead.full_name }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lead Info Card -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 mb-8">
+            <div class="flex items-center space-x-4">
+                <div class="h-16 w-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                    {{ lead.first_name|first }}{{ lead.last_name|first }}
+                </div>
+                <div class="flex-1">
+                    <h2 class="text-2xl font-bold text-gray-900">{{ lead.full_name }}</h2>
+                    <p class="text-gray-600">{{ lead.email }}</p>
+                    <p class="text-gray-600">{{ lead.phone_number }}</p>
+                </div>
+                <div class="text-right">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                        {{ lead.category.name|default:"Uncategorized" }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-xl font-bold text-gray-900">Follow-up Details</h3>
+                <p class="text-gray-600">Schedule when you should follow up with this lead</p>
+            </div>
+
+            <form method="post" class="p-8">
+                {% csrf_token %}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Follow-up Date -->
+                    <div class="md:col-span-2">
+                        <label for="{{ form.follow_up_date.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-calendar mr-2"></i>Follow-up Date & Time
+                        </label>
+                        {{ form.follow_up_date }}
+                        {% if form.follow_up_date.errors %}
+                        <div class="mt-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
+                            <i class="fas fa-exclamation-circle mr-2"></i>
+                            {{ form.follow_up_date.errors.0 }}
+                        </div>
+                        {% endif %}
+                        {% if form.follow_up_date.help_text %}
+                        <p class="mt-2 text-sm text-gray-500">{{ form.follow_up_date.help_text }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Follow-up Notes -->
+                    <div class="md:col-span-2">
+                        <label for="{{ form.follow_up_notes.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-sticky-note mr-2"></i>Follow-up Notes
+                        </label>
+                        {{ form.follow_up_notes }}
+                        {% if form.follow_up_notes.errors %}
+                        <div class="mt-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
+                            <i class="fas fa-exclamation-circle mr-2"></i>
+                            {{ form.follow_up_notes.errors.0 }}
+                        </div>
+                        {% endif %}
+                        {% if form.follow_up_notes.help_text %}
+                        <p class="mt-2 text-sm text-gray-500">{{ form.follow_up_notes.help_text }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Send Calendar Invite -->
+                    <div class="md:col-span-2">
+                        <div class="flex items-center">
+                            {{ form.send_calendar_invite }}
+                            <label for="{{ form.send_calendar_invite.id_for_label }}" class="ml-3 text-sm font-medium text-gray-700">
+                                <i class="fas fa-calendar-plus mr-2"></i>Send calendar invite to lead
+                            </label>
+                        </div>
+                        {% if form.send_calendar_invite.errors %}
+                        <div class="mt-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
+                            <i class="fas fa-exclamation-circle mr-2"></i>
+                            {{ form.send_calendar_invite.errors.0 }}
+                        </div>
+                        {% endif %}
+                        {% if form.send_calendar_invite.help_text %}
+                        <p class="mt-2 text-sm text-gray-500">{{ form.send_calendar_invite.help_text }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Quick Schedule Options -->
+                <div class="mt-8 p-6 bg-gray-50 rounded-xl border border-gray-200">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">Quick Schedule Options</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <button type="button" class="quick-schedule px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200" data-hours="1">
+                            <i class="fas fa-clock mr-2"></i>1 Hour
+                        </button>
+                        <button type="button" class="quick-schedule px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200" data-hours="24">
+                            <i class="fas fa-sun mr-2"></i>Tomorrow
+                        </button>
+                        <button type="button" class="quick-schedule px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200" data-hours="72">
+                            <i class="fas fa-calendar-day mr-2"></i>3 Days
+                        </button>
+                        <button type="button" class="quick-schedule px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200" data-hours="168">
+                            <i class="fas fa-calendar-week mr-2"></i>1 Week
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200 mt-8">
+                    <button type="submit" class="flex-1 inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 transform hover:scale-105">
+                        <i class="fas fa-calendar-check mr-2"></i>
+                        Schedule Follow-up
+                    </button>
+                    <a href="{% url 'leads:lead-detail' lead.pk %}" class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-base font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                        <i class="fas fa-times mr-2"></i>
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Custom form field styling */
+input[type="datetime-local"], textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-size: 16px;
+    line-height: 1.75;
+    transition: all 0.2s;
+}
+
+input[type="datetime-local"]:focus, textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+/* Animation for the cards */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.bg-white {
+    animation: slideInUp 0.6s ease-out;
+}
+</style>
+
+<script>
+// Quick schedule functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const quickScheduleButtons = document.querySelectorAll('.quick-schedule');
+    const dateTimeInput = document.getElementById('{{ form.follow_up_date.id_for_label }}');
+    
+    quickScheduleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const hours = parseInt(this.dataset.hours);
+            const futureDate = new Date();
+            futureDate.setHours(futureDate.getHours() + hours);
+            
+            // Format date for datetime-local input
+            const year = futureDate.getFullYear();
+            const month = String(futureDate.getMonth() + 1).padStart(2, '0');
+            const day = String(futureDate.getDate()).padStart(2, '0');
+            const hours24 = String(futureDate.getHours()).padStart(2, '0');
+            const minutes = String(futureDate.getMinutes()).padStart(2, '0');
+            
+            const formattedDate = `${year}-${month}-${day}T${hours24}:${minutes}`;
+            dateTimeInput.value = formattedDate;
+        });
+    });
+});
+</script>
+{% endblock %} 

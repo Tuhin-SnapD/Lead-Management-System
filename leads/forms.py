@@ -12,7 +12,7 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from typing import Any, Dict
 
-from .models import Lead, Agent, Category
+from .models import Lead, Agent, Category, LeadInteraction
 from .services import LeadService
 
 User = get_user_model()
@@ -104,43 +104,46 @@ class LeadModelForm(forms.ModelForm):
         )
         widgets = {
             'first_name': forms.TextInput(attrs={
-                'class': 'form-input',
+                'class': 'block w-full pl-16 pr-6 py-4 border border-gray-300 rounded-xl leading-7 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base transition-all duration-200',
                 'placeholder': _('Enter first name'),
                 'maxlength': '50'
             }),
             'last_name': forms.TextInput(attrs={
-                'class': 'form-input',
+                'class': 'block w-full pl-16 pr-6 py-4 border border-gray-300 rounded-xl leading-7 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base transition-all duration-200',
                 'placeholder': _('Enter last name'),
                 'maxlength': '50'
             }),
             'age': forms.NumberInput(attrs={
-                'class': 'form-input',
+                'class': 'block w-full pl-16 pr-6 py-4 border border-gray-300 rounded-xl leading-7 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base transition-all duration-200',
                 'min': '0',
                 'max': '150',
                 'placeholder': _('Enter age')
             }),
             'email': forms.EmailInput(attrs={
-                'class': 'form-input',
+                'class': 'block w-full pl-16 pr-6 py-4 border border-gray-300 rounded-xl leading-7 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base transition-all duration-200',
                 'placeholder': _('Enter email address')
             }),
             'phone_number': forms.TextInput(attrs={
-                'class': 'form-input',
+                'class': 'block w-full pl-16 pr-6 py-4 border border-gray-300 rounded-xl leading-7 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base transition-all duration-200',
                 'placeholder': _('Enter phone number (e.g., +1234567890)')
             }),
             'description': forms.Textarea(attrs={
-                'class': 'form-textarea',
+                'class': 'block w-full pl-6 pr-6 py-4 border border-gray-300 rounded-xl leading-7 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base transition-all duration-200',
                 'rows': '4',
-                'placeholder': _('Enter additional notes about the lead')
+                'placeholder': _('Enter additional notes about the lead'),
+                'style': 'min-height: 140px; resize: vertical; line-height: 1.6;'
             }),
             'source': forms.TextInput(attrs={
-                'class': 'form-input',
+                'class': 'block w-full pl-16 pr-6 py-4 border border-gray-300 rounded-xl leading-7 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base transition-all duration-200',
                 'placeholder': _('Enter lead source (e.g., website, referral)')
             }),
             'agent': forms.Select(attrs={
-                'class': 'form-select'
+                'class': 'block w-full pl-16 pr-12 py-4 border border-gray-300 rounded-xl leading-7 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base transition-all duration-200',
+                'style': 'background-image: url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e"); background-position: right 1.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em;'
             }),
             'category': forms.Select(attrs={
-                'class': 'form-select'
+                'class': 'block w-full pl-16 pr-12 py-4 border border-gray-300 rounded-xl leading-7 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base transition-all duration-200',
+                'style': 'background-image: url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e"); background-position: right 1.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em;'
             }),
         }
         help_texts = {
@@ -198,7 +201,20 @@ class LeadModelForm(forms.ModelForm):
         if not first_name and not last_name:
             raise ValidationError(_('At least first name or last name must be provided.'))
         
+        # Validate organisation is set
+        if not self.organisation:
+            raise ValidationError(_('Organisation is required for lead creation.'))
+        
         return cleaned_data
+
+    def save(self, commit: bool = True) -> Lead:
+        """Save the form with organisation set."""
+        instance = super().save(commit=False)
+        if self.organisation:
+            instance.organisation = self.organisation
+        if commit:
+            instance.save()
+        return instance
 
 
 class LeadForm(forms.Form):
@@ -210,14 +226,14 @@ class LeadForm(forms.Form):
     first_name = forms.CharField(
         max_length=50,
         widget=forms.TextInput(attrs={
-            'class': 'form-input',
+            'class': 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm',
             'placeholder': _('Enter first name')
         })
     )
     last_name = forms.CharField(
         max_length=50,
         widget=forms.TextInput(attrs={
-            'class': 'form-input',
+            'class': 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm',
             'placeholder': _('Enter last name')
         })
     )
@@ -225,7 +241,7 @@ class LeadForm(forms.Form):
         min_value=0,
         max_value=150,
         widget=forms.NumberInput(attrs={
-            'class': 'form-input',
+            'class': 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm',
             'placeholder': _('Enter age')
         })
     )
@@ -410,7 +426,7 @@ class LeadCategoryUpdateForm(forms.ModelForm):
         fields = ('category',)
         widgets = {
             'category': forms.Select(attrs={
-                'class': 'form-select'
+                'class': 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
             })
         }
         help_texts = {
@@ -439,7 +455,7 @@ class LeadFilterForm(forms.Form):
     search = forms.CharField(
         required=False,
         widget=forms.TextInput(attrs={
-            'class': 'form-input',
+            'class': 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm',
             'placeholder': _('Search leads...')
         }),
         help_text=_('Search by name, email, or phone number')
@@ -450,7 +466,7 @@ class LeadFilterForm(forms.Form):
         required=False,
         empty_label=_("All Agents"),
         widget=forms.Select(attrs={
-            'class': 'form-select'
+            'class': 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
         })
     )
     
@@ -459,7 +475,7 @@ class LeadFilterForm(forms.Form):
         required=False,
         empty_label=_("All Categories"),
         widget=forms.Select(attrs={
-            'class': 'form-select'
+            'class': 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
         })
     )
     
@@ -471,14 +487,14 @@ class LeadFilterForm(forms.Form):
         ],
         required=False,
         widget=forms.Select(attrs={
-            'class': 'form-select'
+            'class': 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
         })
     )
     
     date_from = forms.DateField(
         required=False,
         widget=forms.DateInput(attrs={
-            'class': 'form-input',
+            'class': 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm',
             'type': 'date'
         })
     )
@@ -486,7 +502,7 @@ class LeadFilterForm(forms.Form):
     date_to = forms.DateField(
         required=False,
         widget=forms.DateInput(attrs={
-            'class': 'form-input',
+            'class': 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm',
             'type': 'date'
         })
     )
@@ -516,4 +532,174 @@ class LeadFilterForm(forms.Form):
             raise ValidationError(_('Start date must be before end date.'))
         
         return cleaned_data
+
+
+class LeadInteractionForm(forms.ModelForm):
+    """
+    Form for recording lead interactions.
+    """
+    
+    class Meta:
+        model = LeadInteraction
+        fields = ('interaction_type', 'notes', 'duration_minutes', 'outcome')
+        widgets = {
+            'interaction_type': forms.Select(attrs={
+                'class': 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+            }),
+            'notes': forms.Textarea(attrs={
+                'class': 'block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm',
+                'rows': '4',
+                'placeholder': _('Enter interaction notes...')
+            }),
+            'duration_minutes': forms.NumberInput(attrs={
+                'class': 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm',
+                'min': '1',
+                'max': '480',
+                'placeholder': _('Duration in minutes')
+            }),
+            'outcome': forms.Select(attrs={
+                'class': 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+            }),
+        }
+
+
+class FollowUpForm(forms.Form):
+    """
+    Form for scheduling follow-ups with leads.
+    """
+    
+    follow_up_date = forms.DateTimeField(
+        widget=forms.DateTimeInput(attrs={
+            'class': 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm',
+            'type': 'datetime-local'
+        }),
+        help_text=_('When should the follow-up be scheduled?')
+    )
+    
+    follow_up_notes = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm',
+            'rows': '4',
+            'placeholder': _('Enter follow-up notes...')
+        }),
+        required=False,
+        help_text=_('Optional notes for the follow-up')
+    )
+    
+    send_calendar_invite = forms.BooleanField(
+        required=False,
+        initial=False,
+        widget=forms.CheckboxInput(attrs={
+            'class': 'h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded'
+        }),
+        label=_('Send calendar invite'),
+        help_text=_('Send a calendar invite to the lead')
+    )
+
+
+class SnoozeForm(forms.Form):
+    """
+    Form for snoozing leads.
+    """
+    
+    snooze_until = forms.DateTimeField(
+        widget=forms.DateTimeInput(attrs={
+            'class': 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm',
+            'type': 'datetime-local'
+        }),
+        help_text=_('When should the lead be unsnoozed?')
+    )
+    
+    snooze_reason = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm',
+            'rows': '3',
+            'placeholder': _('Reason for snoozing...')
+        }),
+        required=False,
+        help_text=_('Optional reason for snoozing the lead')
+    )
+
+
+class LeadScoringForm(forms.Form):
+    """
+    Form for manual lead scoring adjustments.
+    """
+    
+    lead_score = forms.FloatField(
+        min_value=0.0,
+        max_value=100.0,
+        widget=forms.NumberInput(attrs={
+            'class': 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm',
+            'step': '0.1',
+            'placeholder': _('Enter score (0-100)')
+        }),
+        help_text=_('Manual lead score (0-100)')
+    )
+    
+    engagement_level = forms.ChoiceField(
+        choices=[
+            ('low', 'Low'),
+            ('medium', 'Medium'),
+            ('high', 'High'),
+        ],
+        widget=forms.Select(attrs={
+            'class': 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+        }),
+        help_text=_('Engagement level based on interactions')
+    )
+
+
+class AgentPerformanceFilterForm(forms.Form):
+    """
+    Form for filtering agent performance data.
+    """
+    
+    agent = forms.ModelChoiceField(
+        queryset=Agent.objects.none(),
+        required=False,
+        empty_label=_("All Agents"),
+        widget=forms.Select(attrs={
+            'class': 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+        })
+    )
+    
+    date_from = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={
+            'class': 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm',
+            'type': 'date'
+        })
+    )
+    
+    date_to = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={
+            'class': 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm',
+            'type': 'date'
+        })
+    )
+    
+    metric = forms.ChoiceField(
+        choices=[
+            ('conversion_rate', _('Conversion Rate')),
+            ('contact_rate', _('Contact Rate')),
+            ('leads_assigned', _('Leads Assigned')),
+            ('leads_converted', _('Leads Converted')),
+        ],
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+        })
+    )
+    
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        organisation = kwargs.pop('organisation', None)
+        super().__init__(*args, **kwargs)
+        
+        if organisation:
+            self.fields['agent'].queryset = Agent.objects.filter(
+                organisation=organisation,
+                is_active=True
+            ).select_related('user').order_by('user__first_name', 'user__last_name')
 

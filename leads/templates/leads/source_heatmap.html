@@ -1,0 +1,344 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load lead_extras %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+.heatmap-cell {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.heatmap-cell:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.source-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px;
+    transition: all 0.2s ease;
+}
+
+.source-card:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.conversion-rate {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.conversion-high { color: #10B981; }
+.conversion-medium { color: #F59E0B; }
+.conversion-low { color: #EF4444; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Lead Source Analytics</h1>
+                <p class="text-gray-600">Analyze lead source performance and conversion rates</p>
+            </div>
+            <div class="flex space-x-3">
+                <a href="{% url 'leads:lead-list' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    <i class="fas fa-list mr-2"></i>
+                    Back to Leads
+                </a>
+                <a href="{% url 'dashboard-enhanced' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                    <i class="fas fa-chart-bar mr-2"></i>
+                    Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="source-card">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-sources text-blue-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Total Sources</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ sources_data|length }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="source-card">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-chart-line text-green-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Avg Conversion Rate</p>
+                    <p class="text-2xl font-bold text-gray-900">
+                        {% if sources_data %}
+                            {{ sources_data|dictsort:"conversion_rate"|last|get_item:"conversion_rate"|floatformat:1 }}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="source-card">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-trophy text-purple-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Best Performing</p>
+                    <p class="text-lg font-bold text-gray-900">
+                        {% if sources_data %}
+                            {{ sources_data|dictsort:"conversion_rate"|last|get_item:"source"|default:"N/A" }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <!-- Lead Distribution Chart -->
+        <div class="source-card">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Lead Distribution by Source</h3>
+            <div class="h-80">
+                <canvas id="distributionChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Conversion Rate Chart -->
+        <div class="source-card">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Conversion Rates by Source</h3>
+            <div class="h-80">
+                <canvas id="conversionChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Source Performance Table -->
+    <div class="source-card">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Source Performance Details</h3>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Source
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Total Leads
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Converted
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Conversion Rate
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Performance
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for source in sources_data %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-10 w-10">
+                                    <div class="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                        <i class="fas fa-{% if source.source == 'website' %}globe{% elif source.source == 'referral' %}user-friends{% elif source.source == 'social' %}share-alt{% else %}tag{% endif %} text-gray-600"></i>
+                                    </div>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">
+                                        {{ source.source|default:"Unknown" }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ source.total_leads }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ source.converted_leads }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="conversion-rate conversion-{% if source.conversion_rate > 20 %}high{% elif source.conversion_rate > 10 %}medium{% else %}low{% endif %}">
+                                {{ source.conversion_rate|floatformat:1 }}%
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                                    <div class="bg-{% if source.conversion_rate > 20 %}green{% elif source.conversion_rate > 10 %}yellow{% else %}red{% endif %}-500 h-2 rounded-full" style="width: {{ source.conversion_rate }}%"></div>
+                                </div>
+                                <span class="text-xs text-gray-500">
+                                    {% if source.conversion_rate > 20 %}Excellent
+                                    {% elif source.conversion_rate > 10 %}Good
+                                    {% else %}Needs Improvement{% endif %}
+                                </span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                            <i class="fas fa-chart-bar text-4xl mb-2"></i>
+                            <p>No source data available</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Recommendations -->
+    {% if sources_data %}
+    <div class="source-card mt-8">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">AI-Powered Recommendations</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="p-4 bg-blue-50 rounded-lg">
+                <div class="flex items-center mb-2">
+                    <i class="fas fa-lightbulb text-blue-600 mr-2"></i>
+                    <h4 class="font-medium text-gray-900">Focus on High-Performing Sources</h4>
+                </div>
+                <p class="text-sm text-gray-600">
+                    {% with best_source=sources_data|dictsort:"conversion_rate"|last %}
+                    Consider allocating more resources to "{{ best_source.source }}" which has a {{ best_source.conversion_rate|floatformat:1 }}% conversion rate.
+                    {% endwith %}
+                </p>
+            </div>
+            
+            <div class="p-4 bg-yellow-50 rounded-lg">
+                <div class="flex items-center mb-2">
+                    <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>
+                    <h4 class="font-medium text-gray-900">Improve Low-Performing Sources</h4>
+                </div>
+                <p class="text-sm text-gray-600">
+                    {% with worst_source=sources_data|dictsort:"conversion_rate"|first %}
+                    "{{ worst_source.source }}" has a low conversion rate of {{ worst_source.conversion_rate|floatformat:1 }}%. Consider optimizing your approach for this source.
+                    {% endwith %}
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// Lead Distribution Chart
+const distributionCtx = document.getElementById('distributionChart').getContext('2d');
+const distributionChart = new Chart(distributionCtx, {
+    type: 'doughnut',
+    data: {
+        labels: [{% for source in sources_data %}'{{ source.source|default:"Unknown" }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+        datasets: [{
+            data: [{% for source in sources_data %}{{ source.total_leads }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+            backgroundColor: [
+                '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6',
+                '#06B6D4', '#84CC16', '#F97316', '#EC4899', '#6366F1'
+            ],
+            borderWidth: 2,
+            borderColor: '#ffffff'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    padding: 20,
+                    usePointStyle: true
+                }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const label = context.label || '';
+                        const value = context.parsed;
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const percentage = ((value / total) * 100).toFixed(1);
+                        return `${label}: ${value} (${percentage}%)`;
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Conversion Rate Chart
+const conversionCtx = document.getElementById('conversionChart').getContext('2d');
+const conversionChart = new Chart(conversionCtx, {
+    type: 'bar',
+    data: {
+        labels: [{% for source in sources_data %}'{{ source.source|default:"Unknown" }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+        datasets: [{
+            label: 'Conversion Rate (%)',
+            data: [{% for source in sources_data %}{{ source.conversion_rate|floatformat:1 }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+            backgroundColor: [
+                {% for source in sources_data %}
+                {% if source.conversion_rate > 20 %}'#10B981'
+                {% elif source.conversion_rate > 10 %}'#F59E0B'
+                {% else %}'#EF4444'
+                {% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}
+            ],
+            borderWidth: 1,
+            borderColor: '#ffffff',
+            borderRadius: 4
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100,
+                ticks: {
+                    callback: function(value) {
+                        return value + '%';
+                    }
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return `Conversion Rate: ${context.parsed.y}%`;
+                    }
+                }
+            }
+        }
+    }
+});
+</script>
+{% endblock content %} 

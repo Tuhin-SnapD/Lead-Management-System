@@ -27,26 +27,324 @@
             transform: translateY(-2px);
             box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
+        /* Sidebar responsive behavior */
+        @media (max-width: 1024px) {
+            #sidebar {
+                transform: translateX(-100%);
+            }
+        }
     </style>
+    {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-gray-50 min-h-screen">
-    {% include 'navbar.html' %}
-    
-    <main class="min-h-screen">
+<body class="bg-gray-50">
+    {% if user.is_authenticated %}
+        <!-- Sidebar Navigation -->
+        <div class="flex h-screen bg-gray-100">
+            <!-- Sidebar -->
+            {% include 'navbar.html' %}
+
+            <!-- Main Content Area -->
+            <div class="flex-1 flex flex-col overflow-hidden">
+                <!-- Top Header Bar -->
+                <header class="bg-white shadow-sm border-b border-gray-200">
+                    <div class="flex items-center justify-between px-4 py-3">
+                        <!-- Mobile menu button -->
+                        <button id="sidebar-toggle" class="lg:hidden text-gray-500 hover:text-gray-700 focus:outline-none">
+                            <i class="fas fa-bars text-xl"></i>
+                        </button>
+
+                        <!-- Breadcrumb -->
+                        <div class="flex-1 px-4">
+                            <nav class="flex" aria-label="Breadcrumb">
+                                <ol class="flex items-center space-x-4">
+                                    <li>
+                                        <div class="flex items-center">
+                                            <i class="fas fa-home text-gray-400"></i>
+                                            <span class="ml-2 text-sm font-medium text-gray-500">Dashboard</span>
+                                        </div>
+                                    </li>
+                                    {% if request.resolver_match.namespace %}
+                                    <li>
+                                        <div class="flex items-center">
+                                            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                                            <span class="text-sm font-medium text-gray-900 capitalize">{{ request.resolver_match.namespace }}</span>
+                                        </div>
+                                    </li>
+                                    {% endif %}
+                                    {% if request.resolver_match.url_name %}
+                                    <li>
+                                        <div class="flex items-center">
+                                            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                                            <span class="text-sm font-medium text-gray-900">{{ request.resolver_match.url_name|title|cut:"-" }}</span>
+                                        </div>
+                                    </li>
+                                    {% endif %}
+                                </ol>
+                            </nav>
+                        </div>
+
+                        <!-- Right side actions -->
+                        <div class="flex items-center space-x-4">
+                            <!-- Notifications -->
+                            <button class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                                <i class="fas fa-bell text-xl"></i>
+                            </button>
+                            
+                            <!-- Help -->
+                            <button onclick="openHelpModal()" class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                                <i class="fas fa-question-circle text-xl"></i>
+                            </button>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Page Content -->
+                <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50">
+                    {% if messages %}
+                        {% include 'messages.html' %}
+                    {% endif %}
+                    
+                    {% block content %}
+                    {% endblock content %}
+                </main>
+            </div>
+        </div>
+
+        <!-- Quick Actions Modal -->
+        <div id="quick-actions-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                <div class="mt-3">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-medium text-gray-900">Quick Actions</h3>
+                        <button onclick="closeQuickActionModal()" class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-3">
+                        <a href="{% url 'leads:lead-create' %}" class="flex items-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors duration-200">
+                            <i class="fas fa-user-plus text-blue-600 mr-3"></i>
+                            <div>
+                                <div class="font-medium text-gray-900">Add New Lead</div>
+                                <div class="text-sm text-gray-600">Create a new lead record</div>
+                            </div>
+                        </a>
+                        <a href="{% url 'leads:kanban-board' %}" class="flex items-center p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors duration-200">
+                            <i class="fas fa-columns text-green-600 mr-3"></i>
+                            <div>
+                                <div class="font-medium text-gray-900">Kanban Board</div>
+                                <div class="text-sm text-gray-600">Visual lead management</div>
+                            </div>
+                        </a>
+                        <a href="{% url 'leads:agent-performance' %}" class="flex items-center p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors duration-200">
+                            <i class="fas fa-chart-line text-purple-600 mr-3"></i>
+                            <div>
+                                <div class="font-medium text-gray-900">Performance Report</div>
+                                <div class="text-sm text-gray-600">View agent metrics</div>
+                            </div>
+                        </a>
+                        <a href="{% url 'features-overview' %}" class="flex items-center p-3 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors duration-200">
+                            <i class="fas fa-th-large text-indigo-600 mr-3"></i>
+                            <div>
+                                <div class="font-medium text-gray-900">Features Overview</div>
+                                <div class="text-sm text-gray-600">Explore all features</div>
+                            </div>
+                        </a>
+                        {% if request.user.is_organisor %}
+                        <a href="{% url 'agents:agent-create' %}" class="flex items-center p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors duration-200">
+                            <i class="fas fa-user-plus text-orange-600 mr-3"></i>
+                            <div>
+                                <div class="font-medium text-gray-900">Add Agent</div>
+                                <div class="text-sm text-gray-600">Create new team member</div>
+                            </div>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Modal -->
+        <div id="search-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                <div class="mt-3">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-medium text-gray-900">Search Leads</h3>
+                        <button onclick="closeSearchModal()" class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <form method="get" action="{% url 'leads:lead-list' %}">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Search Term</label>
+                                <input type="text" name="search" placeholder="Name, email, or phone..." 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                <select name="category" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">All Categories</option>
+                                    {% for category in request.user.userprofile.categories.all %}
+                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Lead Score</label>
+                                <select name="score_range" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">All Scores</option>
+                                    <option value="high">High (80-100)</option>
+                                    <option value="medium">Medium (50-79)</option>
+                                    <option value="low">Low (0-49)</option>
+                                </select>
+                            </div>
+                            <div class="flex space-x-3">
+                                <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
+                                    <i class="fas fa-search mr-2"></i>Search
+                                </button>
+                                <button type="button" onclick="closeSearchModal()" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-200">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Modal -->
+        <div id="help-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                <div class="mt-3">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-medium text-gray-900">Help & Navigation</h3>
+                        <button onclick="closeHelpModal()" class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-4 text-sm">
+                        <div>
+                            <h4 class="font-medium text-gray-900 mb-2">Key Features:</h4>
+                            <ul class="space-y-1 text-gray-600">
+                                <li>• <strong>Dashboard:</strong> Overview and analytics</li>
+                                <li>• <strong>Leads:</strong> Manage all your leads</li>
+                                <li>• <strong>Kanban:</strong> Visual lead management</li>
+                                <li>• <strong>Analytics:</strong> Performance insights</li>
+                                <li>• <strong>AI:</strong> Machine learning features</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-900 mb-2">Quick Tips:</h4>
+                            <ul class="space-y-1 text-gray-600">
+                                <li>• Use Quick Actions for common tasks</li>
+                                <li>• Search leads by name, email, or criteria</li>
+                                <li>• View performance metrics in Analytics</li>
+                                <li>• Train ML model for better predictions</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        // Sidebar toggle functionality
+        document.getElementById('sidebar-toggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        });
+
+        document.getElementById('sidebar-close').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.add('-translate-x-full');
+        });
+
+        // Modal functions
+        function openQuickActionModal() {
+            document.getElementById('quick-actions-modal').classList.remove('hidden');
+        }
+
+        function closeQuickActionModal() {
+            document.getElementById('quick-actions-modal').classList.add('hidden');
+        }
+
+        function openSearchModal() {
+            document.getElementById('search-modal').classList.remove('hidden');
+        }
+
+        function closeSearchModal() {
+            document.getElementById('search-modal').classList.add('hidden');
+        }
+
+        function openHelpModal() {
+            document.getElementById('help-modal').classList.remove('hidden');
+        }
+
+        function closeHelpModal() {
+            document.getElementById('help-modal').classList.add('hidden');
+        }
+
+        // Close modals when clicking outside
+        window.addEventListener('click', function(event) {
+            const quickModal = document.getElementById('quick-actions-modal');
+            const searchModal = document.getElementById('search-modal');
+            const helpModal = document.getElementById('help-modal');
+            
+            if (event.target === quickModal) {
+                closeQuickActionModal();
+            }
+            if (event.target === searchModal) {
+                closeSearchModal();
+            }
+            if (event.target === helpModal) {
+                closeHelpModal();
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey || event.metaKey) {
+                switch(event.key) {
+                    case 'k':
+                        event.preventDefault();
+                        openSearchModal();
+                        break;
+                    case 'n':
+                        event.preventDefault();
+                        window.location.href = "{% url 'leads:lead-create' %}";
+                        break;
+                    case 'b':
+                        event.preventDefault();
+                        window.location.href = "{% url 'leads:kanban-board' %}";
+                        break;
+                }
+            }
+        });
+        </script>
+    {% else %}
+        <!-- Simple navbar for non-authenticated users -->
+        <nav class="bg-white shadow-sm border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center">
+                        <a href="{% url 'landing-page' %}" class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-chart-line text-white text-lg"></i>
+                            </div>
+                            <span class="text-xl font-bold text-gray-900">LeadFlow</span>
+                        </a>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <a href="{% url 'login' %}" class="text-gray-600 hover:text-blue-600 transition-colors duration-200">Login</a>
+                        <a href="{% url 'signup' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200">Sign Up</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        
         {% if messages %}
             {% include 'messages.html' %}
         {% endif %}
-        
-        {% block content %}
-        {% endblock content %}
-    </main>
-
-    <footer class="bg-white border-t border-gray-200 mt-16">
-        <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-            <div class="text-center text-gray-500 text-sm">
-                <p>&copy; 2024 Lead Management System. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
+    {% endif %}
 </body>
 </html>

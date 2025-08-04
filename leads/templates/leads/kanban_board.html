@@ -1,0 +1,286 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load lead_extras %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<style>
+.kanban-column {
+    min-height: 500px;
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.kanban-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+    cursor: grab;
+    transition: all 0.2s ease;
+}
+
+.kanban-card:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.kanban-card:active {
+    cursor: grabbing;
+}
+
+.lead-score {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.score-high { background: #dcfce7; color: #166534; }
+.score-medium { background: #fef3c7; color: #92400e; }
+.score-low { background: #fee2e2; color: #991b1b; }
+
+.priority-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.priority-high { background: #fee2e2; color: #991b1b; }
+.priority-medium { background: #fef3c7; color: #92400e; }
+.priority-low { background: #dcfce7; color: #166534; }
+
+.overdue-badge {
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.snoozed-badge {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Kanban Board</h1>
+                <p class="text-gray-600">Drag and drop leads between stages to manage your pipeline</p>
+            </div>
+            <div class="flex space-x-3">
+                <a href="{% url 'leads:lead-list' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    <i class="fas fa-list mr-2"></i>
+                    List View
+                </a>
+                <a href="{% url 'leads:lead-create' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                    <i class="fas fa-plus mr-2"></i>
+                    Add Lead
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kanban Board -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <!-- Unassigned Column -->
+        <div class="kanban-column">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Unassigned</h3>
+                <span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                    {{ kanban_data.Unassigned.count }}
+                </span>
+            </div>
+            <div id="unassigned-column" class="space-y-3">
+                {% for lead in kanban_data.Unassigned %}
+                <div class="kanban-card" data-lead-id="{{ lead.id }}" data-category-id="">
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-medium text-gray-900 text-sm">{{ lead.full_name }}</h4>
+                        <span class="lead-score score-{{ lead.get_priority_level }}">
+                            {{ lead.lead_score|floatformat:0 }}
+                        </span>
+                    </div>
+                    <div class="text-xs text-gray-600 mb-2">
+                        <p>{{ lead.email }}</p>
+                        <p>{{ lead.phone_number }}</p>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="priority-badge priority-{{ lead.get_priority_level }}">
+                            {{ lead.get_priority_level }}
+                        </span>
+                        <div class="flex space-x-1">
+                            {% if lead.is_overdue_follow_up %}
+                            <span class="overdue-badge">Overdue</span>
+                            {% endif %}
+                            {% if lead.is_snoozed %}
+                            <span class="snoozed-badge">Snoozed</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mt-2 flex space-x-1">
+                        <a href="{% url 'leads:lead-detail' lead.id %}" class="text-xs text-blue-600 hover:text-blue-800">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                        <a href="{% url 'leads:assign-agent' lead.id %}" class="text-xs text-green-600 hover:text-green-800">
+                            <i class="fas fa-user-plus"></i> Assign
+                        </a>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-inbox text-2xl mb-2"></i>
+                    <p class="text-sm">No unassigned leads</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Category Columns -->
+        {% for category in categories %}
+        <div class="kanban-column">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">{{ category.name }}</h3>
+                <span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                    {{ kanban_data|get_item:category.name|length }}
+                </span>
+            </div>
+            <div id="category-{{ category.id }}-column" class="space-y-3" data-category-id="{{ category.id }}">
+                {% for lead in kanban_data|get_item:category.name %}
+                <div class="kanban-card" data-lead-id="{{ lead.id }}" data-category-id="{{ category.id }}">
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-medium text-gray-900 text-sm">{{ lead.full_name }}</h4>
+                        <span class="lead-score score-{{ lead.get_priority_level }}">
+                            {{ lead.lead_score|floatformat:0 }}
+                        </span>
+                    </div>
+                    <div class="text-xs text-gray-600 mb-2">
+                        <p>{{ lead.email }}</p>
+                        <p>{{ lead.phone_number }}</p>
+                        {% if lead.agent %}
+                        <p class="text-blue-600">Agent: {{ lead.agent.full_name }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="priority-badge priority-{{ lead.get_priority_level }}">
+                            {{ lead.get_priority_level }}
+                        </span>
+                        <div class="flex space-x-1">
+                            {% if lead.is_overdue_follow_up %}
+                            <span class="overdue-badge">Overdue</span>
+                            {% endif %}
+                            {% if lead.is_snoozed %}
+                            <span class="snoozed-badge">Snoozed</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mt-2 flex space-x-1">
+                        <a href="{% url 'leads:lead-detail' lead.id %}" class="text-xs text-blue-600 hover:text-blue-800">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                        <a href="{% url 'leads:lead-interaction-create' lead.id %}" class="text-xs text-purple-600 hover:text-purple-800">
+                            <i class="fas fa-comment"></i> Log
+                        </a>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-inbox text-2xl mb-2"></i>
+                    <p class="text-sm">No leads in {{ category.name }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+// Initialize Sortable for all columns
+document.addEventListener('DOMContentLoaded', function() {
+    const columns = document.querySelectorAll('[id$="-column"]');
+    
+    columns.forEach(function(column) {
+        new Sortable(column, {
+            group: 'leads',
+            animation: 150,
+            ghostClass: 'bg-blue-50',
+            chosenClass: 'bg-blue-100',
+            dragClass: 'shadow-lg',
+            onEnd: function(evt) {
+                const leadId = evt.item.dataset.leadId;
+                const newCategoryId = evt.to.dataset.categoryId || '';
+                
+                // Send AJAX request to update lead category
+                updateLeadCategory(leadId, newCategoryId);
+            }
+        });
+    });
+});
+
+function updateLeadCategory(leadId, categoryId) {
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    fetch(`/leads/${leadId}/category/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
+        },
+        body: JSON.stringify({
+            category: categoryId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            showNotification('Lead moved successfully!', 'success');
+        } else {
+            // Show error message
+            showNotification('Error moving lead. Please try again.', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error moving lead. Please try again.', 'error');
+    });
+}
+
+function showNotification(message, type) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 p-4 rounded-md shadow-lg ${
+        type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+    }`;
+    notification.textContent = message;
+    
+    // Add to page
+    document.body.appendChild(notification);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+</script>
+
+<!-- CSRF Token for AJAX requests -->
+{% csrf_token %}
+{% endblock content %} 

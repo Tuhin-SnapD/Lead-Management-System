@@ -402,46 +402,6 @@
 </div>
 
 <style>
-/* Custom styling for form fields */
-input[type="text"], input[type="email"], input[type="number"], select, textarea {
-    @apply block w-full pl-16 pr-6 py-4 border border-gray-300 rounded-xl leading-7 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base transition-all duration-200;
-    font-size: 16px; /* Prevents zoom on mobile */
-}
-
-textarea {
-    @apply pl-6;
-    min-height: 140px;
-    resize: vertical;
-    line-height: 1.6;
-}
-
-/* Custom styling for select dropdowns */
-select {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-    background-position: right 1.5rem center;
-    background-repeat: no-repeat;
-    background-size: 1.5em 1.5em;
-    padding-right: 3.5rem;
-}
-
-/* Enhanced focus states */
-input[type="text"]:focus, input[type="email"]:focus, input[type="number"]:focus, select:focus, textarea:focus {
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    border-color: #3b82f6;
-}
-
-/* Better placeholder styling */
-input::placeholder, textarea::placeholder {
-    color: #9ca3af;
-    font-weight: 400;
-}
-
-/* Improved icon styling */
-.relative .absolute i {
-    font-size: 16px;
-    color: #9ca3af;
-}
-
 /* Animation for the form */
 @keyframes slideInUp {
     from {
@@ -473,6 +433,12 @@ input::placeholder, textarea::placeholder {
     .space-y-8 > * + * {
         margin-top: 2rem;
     }
+}
+
+/* Improved icon styling */
+.relative .absolute i {
+    font-size: 16px;
+    color: #9ca3af;
 }
 </style>
 {% endblock %}

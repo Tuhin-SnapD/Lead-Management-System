@@ -20,6 +20,8 @@ from leads.views import (
     SignupView, 
     CustomLoginView,
     DashboardView,
+    DashboardEnhancedView,
+    FeaturesOverviewView,
     handle_not_found
 )
 
@@ -41,7 +43,10 @@ urlpatterns = [
     
     # Main application
     path('', LandingPageView.as_view(), name='landing-page'),
-    path('dashboard/', DashboardView.as_view(), name='dashboard'),
+    path('dashboard/', DashboardEnhancedView.as_view(), name='dashboard'),
+    path('dashboard-basic/', DashboardView.as_view(), name='dashboard-basic'),
+    path('dashboard-enhanced/', DashboardEnhancedView.as_view(), name='dashboard-enhanced'),
+    path('features/', FeaturesOverviewView.as_view(), name='features-overview'),
     path('leads/', include('leads.urls', namespace="leads")),
     path('agents/', include('agents.urls', namespace="agents")),
 ]

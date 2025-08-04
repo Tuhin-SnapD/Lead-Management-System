@@ -4,7 +4,7 @@ from django.utils.html import format_html
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
-from .models import User, Lead, Agent, UserProfile, Category
+from .models import User, Lead, Agent, UserProfile, Category, LeadInteraction, AgentPerformance, LeadSource
 
 
 @admin.register(Category)
@@ -173,6 +173,77 @@ class AgentAdmin(admin.ModelAdmin):
     def lead_count(self, obj):
         return obj.leads.count()
     lead_count.short_description = 'Leads'
+
+
+@admin.register(LeadInteraction)
+class LeadInteractionAdmin(admin.ModelAdmin):
+    list_display = ('lead', 'agent', 'interaction_type', 'outcome', 'duration_minutes', 'created_at')
+    list_filter = ('interaction_type', 'outcome', 'created_at', 'agent')
+    search_fields = ('lead__first_name', 'lead__last_name', 'lead__email', 'agent__user__username')
+    readonly_fields = ('created_at',)
+    ordering = ('-created_at',)
+    
+    fieldsets = (
+        ('Interaction Details', {
+            'fields': ('lead', 'agent', 'interaction_type', 'outcome')
+        }),
+        ('Additional Information', {
+            'fields': ('notes', 'duration_minutes')
+        }),
+        ('Metadata', {
+            'fields': ('created_at',),
+            'classes': ('collapse',)
+        }),
+    )
+
+
+@admin.register(AgentPerformance)
+class AgentPerformanceAdmin(admin.ModelAdmin):
+    list_display = ('agent', 'date', 'leads_assigned', 'leads_contacted', 'leads_converted', 'conversion_rate', 'contact_rate')
+    list_filter = ('date', 'agent', 'agent__organisation')
+    search_fields = ('agent__user__username', 'agent__user__email')
+    readonly_fields = ('created_at', 'updated_at')
+    ordering = ('-date',)
+    
+    fieldsets = (
+        ('Performance Metrics', {
+            'fields': ('agent', 'date', 'leads_assigned', 'leads_contacted', 'leads_converted')
+        }),
+        ('Calculated Metrics', {
+            'fields': ('total_interactions', 'average_response_time_hours', 'conversion_rate', 'contact_rate')
+        }),
+        ('Metadata', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+
+@admin.register(LeadSource)
+class LeadSourceAdmin(admin.ModelAdmin):
+    list_display = ('name', 'organisation', 'is_active', 'total_leads', 'conversion_rate', 'created_at')
+    list_filter = ('is_active', 'organisation', 'created_at')
+    search_fields = ('name', 'organisation__user__username')
+    readonly_fields = ('created_at',)
+    ordering = ('name',)
+    
+    fieldsets = (
+        ('Source Information', {
+            'fields': ('organisation', 'name', 'description', 'is_active')
+        }),
+        ('Metadata', {
+            'fields': ('created_at',),
+            'classes': ('collapse',)
+        }),
+    )
+
+    def total_leads(self, obj):
+        return obj.total_leads
+    total_leads.short_description = 'Total Leads'
+
+    def conversion_rate(self, obj):
+        return f"{obj.conversion_rate:.1f}%"
+    conversion_rate.short_description = 'Conversion Rate'
 
 
 # Customize admin site
