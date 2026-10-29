@@ -38,7 +38,7 @@ numpy==1.26.4
 # Task Scheduling and Background Jobs
 celery==5.3.4
 redis==5.0.1
-django-celery-beat==2.5.0
+django-celery-beat==2.9.0
 
 # API and REST
 djangorestframework==3.18.3

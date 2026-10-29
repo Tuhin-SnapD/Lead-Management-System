@@ -275,17 +275,17 @@ class AgentService:
     @staticmethod
     def create_agent(
         email: str,
-        username: str,
         first_name: str,
         last_name: str,
-        organisation: UserProfile
+        organisation: UserProfile,
+        username: Optional[str] = None,
     ) -> Agent:
         """
         Create a new agent with proper setup.
         
         Args:
             email: Agent's email address
-            username: Agent's username
+            username: Agent's username; defaults to the email's local part
             first_name: Agent's first name
             last_name: Agent's last name
             organisation: Organization profile
@@ -297,7 +297,7 @@ class AgentService:
             with transaction.atomic():
                 # Create user account
                 user = User.objects.create_user(
-                    username=username,
+                    username=username or email.partition("@")[0],
                     email=email,
                     first_name=first_name,
                     last_name=last_name,
@@ -468,4 +468,4 @@ class CategoryService:
                 'percentage': 0  # Will be calculated if needed
             }
         
-        return stats 
+        return stats
