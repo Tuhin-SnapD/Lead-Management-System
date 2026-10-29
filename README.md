@@ -1,7 +1,7 @@
 # 🚀 LeadFlow - Modern Lead Management System
 
-[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
-[![Django](https://img.shields.io/badge/Django-4.2.7-green.svg)](https://djangoproject.com)
+[![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://python.org)
+[![Django](https://img.shields.io/badge/Django-5.2.18-green.svg)](https://djangoproject.com)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen.svg)](https://github.com/yourusername/Lead-Management-System)
 
@@ -34,7 +34,7 @@ A modern, feature-rich Django-based lead management system designed for sales te
 - **Kanban Board**: Visual lead management with drag-and-drop functionality
 
 ### 🔧 Technical Features
-- **Django 4.2.7**: Latest stable Django version
+- **Django 5.2.18**: Django long-term support release
 - **PostgreSQL Ready**: Production-ready database support
 - **Custom User Model**: Extended user model with role-based permissions
 - **Signal Handlers**: Automated profile creation and data management
@@ -47,7 +47,7 @@ A modern, feature-rich Django-based lead management system designed for sales te
 
 | Component | Technology | Version |
 |-----------|------------|---------|
-| **Backend** | Django | 4.2.7 |
+| **Backend** | Django | 5.2.18 |
 | **Database** | PostgreSQL/SQLite | Latest |
 | **Frontend** | Tailwind CSS | Latest |
 | **Forms** | Django Crispy Forms | 2.1 |
@@ -59,7 +59,7 @@ A modern, feature-rich Django-based lead management system designed for sales te
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.11 or higher
+- Python 3.12 or higher
 - pip (Python package installer)
 - Git
 
