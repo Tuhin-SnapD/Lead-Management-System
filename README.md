@@ -52,7 +52,7 @@ A modern, feature-rich Django-based lead management system designed for sales te
 | **Frontend** | Tailwind CSS | Latest |
 | **Forms** | Django Crispy Forms | 2.1 |
 | **Icons** | Font Awesome | Latest |
-| **ML** | Scikit-learn | Latest |
+| **ML** | Scikit-learn | 1.9.1 |
 | **Background Tasks** | Celery + Redis | Latest |
 | **Deployment** | Gunicorn + WhiteNoise | Latest |
 
